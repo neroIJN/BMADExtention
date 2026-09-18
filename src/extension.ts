@@ -4,6 +4,7 @@ import { resolveBmadConfig } from './core/config-resolver';
 import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { StatusBarManager } from './adapters/status-bar-manager';
 import { AgentsTreeProvider } from './adapters/agents-tree-provider';
+import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import {
   BmadAgentTreeNode,
   BmadDetectionResult,
@@ -16,6 +17,7 @@ let activeConfig: ConfigResolverResult | undefined;
 let lifecycleProvider: LifecycleTreeProvider | undefined;
 let agentsProvider: AgentsTreeProvider | undefined;
 let statusBarManager: StatusBarManager | undefined;
+let executionDispatcher: ExecutionDispatcher | undefined;
 
 /**
  * Extension activation entrypoint.
@@ -27,10 +29,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(outputChannel);
   outputChannel.appendLine('[BMAD] Initializing BMAD Method Visualizer & Helper...');
 
-  // 2. Initialize Tree View Providers & Status Bar Manager
+  // 2. Initialize Tree View Providers, Status Bar Manager & Execution Dispatcher
   lifecycleProvider = new LifecycleTreeProvider();
   agentsProvider = new AgentsTreeProvider();
   statusBarManager = new StatusBarManager();
+  executionDispatcher = new ExecutionDispatcher();
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider('bmad.views.lifecycle', lifecycleProvider),
     vscode.window.registerTreeDataProvider('bmad.views.agents', agentsProvider),
@@ -111,21 +114,16 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   });
 
-  const runSkillCmd = vscode.commands.registerCommand('bmad.runSkill', (skillId?: string) => {
-    if (skillId) {
-      vscode.window.showInformationMessage(`Launching BMAD Skill: ${skillId}`);
-    } else {
-      vscode.window.showInformationMessage('BMAD Run Skill palette initialized.');
+  const runSkillCmd = vscode.commands.registerCommand('bmad.runSkill', async (skillId?: string) => {
+    if (skillId && executionDispatcher) {
+      await executionDispatcher.dispatchSkill(skillId);
+    } else if (executionDispatcher) {
+      await executionDispatcher.dispatchSkill('bmad-build');
     }
   });
 
   const talkToAgentCmd = vscode.commands.registerCommand('bmad.talkToAgent', async (agentId?: string) => {
-    if (agentId) {
-      vscode.window.showInformationMessage(`Active Persona switched to: ${agentId}`);
-      return;
-    }
-
-    if (!agentsProvider) {
+    if (!agentsProvider || !executionDispatcher) {
       return;
     }
 
@@ -135,11 +133,19 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       return;
     }
 
+    if (agentId) {
+      const match = allAgents.find((a) => a.id === agentId);
+      if (match) {
+        await executionDispatcher.dispatchAgent(match);
+        return;
+      }
+    }
+
     const items = allAgents.map((a) => ({
       label: `${a.icon} ${a.name} — ${a.title}`,
       description: a.module.toUpperCase(),
       detail: a.description,
-      agentId: a.id
+      agent: a
     }));
 
     const selected = await vscode.window.showQuickPick(items, {
@@ -147,8 +153,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       placeHolder: 'Choose an agent persona to converse or consult with...'
     });
 
-    if (selected) {
-      vscode.window.showInformationMessage(`Active Persona switched to: ${selected.label}`);
+    if (selected && selected.agent) {
+      await executionDispatcher.dispatchAgent(selected.agent);
     }
   });
 
@@ -165,18 +171,18 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         `Talk to ${agent.name}`,
         'Close'
       );
-      if (choice === `Talk to ${agent.name}`) {
-        vscode.commands.executeCommand('bmad.talkToAgent', agent.id);
+      if (choice === `Talk to ${agent.name}` && executionDispatcher) {
+        await executionDispatcher.dispatchAgent(agent);
       }
     }
   );
 
   const talkToAgentFromTreeCmd = vscode.commands.registerCommand(
     'bmad.talkToAgentFromTree',
-    (node?: BmadAgentTreeNode) => {
+    async (node?: BmadAgentTreeNode) => {
       const agent = node?.agent;
-      if (agent) {
-        vscode.commands.executeCommand('bmad.talkToAgent', agent.id);
+      if (agent && executionDispatcher) {
+        await executionDispatcher.dispatchAgent(agent);
       }
     }
   );
@@ -205,10 +211,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   const runSkillFromTreeCmd = vscode.commands.registerCommand(
     'bmad.runSkillFromTree',
-    (node?: BmadTreeNode) => {
-      const skillName = node?.skill?.displayName || node?.skill?.id;
-      if (skillName) {
-        vscode.window.showInformationMessage(`Launching BMAD skill: ${skillName}`);
+    async (node?: BmadTreeNode) => {
+      const skill = node?.skill;
+      if (skill && executionDispatcher) {
+        await executionDispatcher.dispatchSkill(skill);
       } else {
         vscode.commands.executeCommand('bmad.runSkill');
       }
