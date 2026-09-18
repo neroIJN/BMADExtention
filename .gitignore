@@ -24,3 +24,9 @@ Thumbs.db
 # Environment
 .env
 .env.local
+
+# BMAD Environment (tracked in bmad-setup branch)
+_bmad/
+_bmad-output/
+.agents/
+.claude/
