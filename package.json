@@ -111,6 +111,23 @@
         "title": "Open Artifact",
         "category": "BMAD",
         "icon": "$(go-to-file)"
+      },
+      {
+        "command": "bmad.inspectAgent",
+        "title": "Inspect Agent Persona",
+        "category": "BMAD"
+      },
+      {
+        "command": "bmad.talkToAgentFromTree",
+        "title": "Talk to Agent",
+        "category": "BMAD",
+        "icon": "$(comment-discussion)"
+      },
+      {
+        "command": "bmad.refreshAgents",
+        "title": "Refresh Agents & Personas",
+        "category": "BMAD",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -124,6 +141,11 @@
           "command": "bmad.refreshLifecycle",
           "when": "view == bmad.views.lifecycle",
           "group": "navigation@2"
+        },
+        {
+          "command": "bmad.refreshAgents",
+          "when": "view == bmad.views.agents",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
@@ -136,6 +158,11 @@
           "command": "bmad.openArtifactFromTree",
           "when": "view == bmad.views.lifecycle && viewItem == bmadSkill",
           "group": "inline@2"
+        },
+        {
+          "command": "bmad.talkToAgentFromTree",
+          "when": "view == bmad.views.agents && viewItem == bmadAgent",
+          "group": "inline@1"
         }
       ]
     },

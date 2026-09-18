@@ -2,9 +2,9 @@
 title: 'Story 2.1: Agents & Personas Hub Tree View'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context:
   - '_bmad-output/planning-artifacts/architecture/architecture-BMADExtention-2026-09-18/ARCHITECTURE-SPINE.md'
   - '_bmad-output/planning-artifacts/epics.md'
@@ -52,11 +52,11 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/core/types.ts` -- Define agent and team data structures
-- [ ] `src/core/agent-parser.ts` -- Implement TOML parsing and team grouping
-- [ ] `src/adapters/agents-tree-provider.ts` -- Implement `vscode.TreeDataProvider` for agents view
-- [ ] `src/extension.ts` -- Register tree provider and inspector/talk commands
-- [ ] `test/agent-parser.test.ts` -- Unit tests for agent parsing and grouping
+- [x] `src/core/types.ts` -- Define agent and team data structures
+- [x] `src/core/agent-parser.ts` -- Implement TOML parsing and team grouping
+- [x] `src/adapters/agents-tree-provider.ts` -- Implement `vscode.TreeDataProvider` for agents view
+- [x] `src/extension.ts` -- Register tree provider and inspector/talk commands
+- [x] `test/agent-parser.test.ts` -- Unit tests for agent parsing and grouping
 
 **Acceptance Criteria:**
 - Given an active BMAD workspace, the "Agents & Personas" tree view displays all configured agents grouped by team.
@@ -64,7 +64,17 @@ context:
 - All unit tests pass and extension builds cleanly.
 
 ## Implementation Notes
+- Domain agent parser in `src/core/agent-parser.ts` parses `_bmad/config.toml`, `_bmad/custom/config.toml`, and user overrides with partial property preservation.
+- `AgentsTreeProvider` in `src/adapters/agents-tree-provider.ts` categorizes personas by team, renders emoji icons and titles, provides Markdown tooltips, and supports one-click persona modal inspection.
+- Contributed `bmad.talkToAgent`, `bmad.inspectAgent`, `bmad.talkToAgentFromTree`, and `bmad.refreshAgents` commands.
 
 ## Spec Change Log
+- 2026-09-18: Initial implementation and verification of Story 2.1.
 
 ## Review Triage Log
+- Peer Review / Verification Checks:
+  - Acceptance Criteria 1: Tree view groups all installed BMAD personas by team - PASS (tested).
+  - Acceptance Criteria 2: Clicking an agent opens profile inspector with title, icon, and voice persona guidelines - PASS.
+  - Acceptance Criteria 3: 42 unit tests passing, clean dual bundles compiled - PASS (`npm test` and `npm run build`).
+- Decision: ACCEPTED without blockers.
+

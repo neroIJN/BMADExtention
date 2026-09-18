@@ -3,11 +3,18 @@ import { detectBmadWorkspace } from './core/workspace-detector';
 import { resolveBmadConfig } from './core/config-resolver';
 import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { StatusBarManager } from './adapters/status-bar-manager';
-import { BmadDetectionResult, BmadTreeNode, ConfigResolverResult } from './core/types';
+import { AgentsTreeProvider } from './adapters/agents-tree-provider';
+import {
+  BmadAgentTreeNode,
+  BmadDetectionResult,
+  BmadTreeNode,
+  ConfigResolverResult
+} from './core/types';
 
 let outputChannel: vscode.OutputChannel | undefined;
 let activeConfig: ConfigResolverResult | undefined;
 let lifecycleProvider: LifecycleTreeProvider | undefined;
+let agentsProvider: AgentsTreeProvider | undefined;
 let statusBarManager: StatusBarManager | undefined;
 
 /**
@@ -22,9 +29,11 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
 
   // 2. Initialize Tree View Providers & Status Bar Manager
   lifecycleProvider = new LifecycleTreeProvider();
+  agentsProvider = new AgentsTreeProvider();
   statusBarManager = new StatusBarManager();
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider('bmad.views.lifecycle', lifecycleProvider),
+    vscode.window.registerTreeDataProvider('bmad.views.agents', agentsProvider),
     statusBarManager
   );
 
@@ -66,8 +75,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
       }
 
-      // Populate Lifecycle tree view and update status bar
+      // Populate Lifecycle tree view, Agents tree view, and update status bar
       await lifecycleProvider.load(rootPath, activeConfig.paths);
+      await agentsProvider.load(rootPath);
       statusBarManager.update(lifecycleProvider.getPhases());
     } catch (err: any) {
       outputChannel.appendLine(`[BMAD Error] Failed to resolve config: ${err?.message || String(err)}`);
@@ -109,8 +119,73 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   });
 
-  const talkToAgentCmd = vscode.commands.registerCommand('bmad.talkToAgent', () => {
-    vscode.window.showInformationMessage('BMAD Persona Selector initialized.');
+  const talkToAgentCmd = vscode.commands.registerCommand('bmad.talkToAgent', async (agentId?: string) => {
+    if (agentId) {
+      vscode.window.showInformationMessage(`Active Persona switched to: ${agentId}`);
+      return;
+    }
+
+    if (!agentsProvider) {
+      return;
+    }
+
+    const allAgents = agentsProvider.getTeams().flatMap((t) => t.agents);
+    if (allAgents.length === 0) {
+      vscode.window.showInformationMessage('No BMAD personas found in current workspace.');
+      return;
+    }
+
+    const items = allAgents.map((a) => ({
+      label: `${a.icon} ${a.name} — ${a.title}`,
+      description: a.module.toUpperCase(),
+      detail: a.description,
+      agentId: a.id
+    }));
+
+    const selected = await vscode.window.showQuickPick(items, {
+      title: 'BMAD Personas Hub — Select Active Agent',
+      placeHolder: 'Choose an agent persona to converse or consult with...'
+    });
+
+    if (selected) {
+      vscode.window.showInformationMessage(`Active Persona switched to: ${selected.label}`);
+    }
+  });
+
+  const inspectAgentCmd = vscode.commands.registerCommand(
+    'bmad.inspectAgent',
+    async (node?: BmadAgentTreeNode) => {
+      const agent = node?.agent;
+      if (!agent) {
+        return;
+      }
+      const choice = await vscode.window.showInformationMessage(
+        `${agent.icon} ${agent.name} — ${agent.title} (${agent.module.toUpperCase()})\n\n"${agent.description}"`,
+        { modal: true },
+        `Talk to ${agent.name}`,
+        'Close'
+      );
+      if (choice === `Talk to ${agent.name}`) {
+        vscode.commands.executeCommand('bmad.talkToAgent', agent.id);
+      }
+    }
+  );
+
+  const talkToAgentFromTreeCmd = vscode.commands.registerCommand(
+    'bmad.talkToAgentFromTree',
+    (node?: BmadAgentTreeNode) => {
+      const agent = node?.agent;
+      if (agent) {
+        vscode.commands.executeCommand('bmad.talkToAgent', agent.id);
+      }
+    }
+  );
+
+  const refreshAgentsCmd = vscode.commands.registerCommand('bmad.refreshAgents', async () => {
+    if (rootPath && agentsProvider) {
+      await agentsProvider.load(rootPath);
+      outputChannel?.appendLine('[BMAD] Agents tree view refreshed.');
+    }
   });
 
   const refreshLifecycleCmd = vscode.commands.registerCommand('bmad.refreshLifecycle', async () => {
@@ -161,6 +236,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     statusCheckCmd,
     runSkillCmd,
     talkToAgentCmd,
+    inspectAgentCmd,
+    talkToAgentFromTreeCmd,
+    refreshAgentsCmd,
     refreshLifecycleCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
@@ -177,3 +255,4 @@ export function deactivate(): void {
     outputChannel.appendLine('[BMAD] Extension deactivated.');
   }
 }
+

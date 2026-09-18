@@ -42,8 +42,8 @@ development_status:
   1-4-inline-tree-actions-status-bar-indicator: done
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-agents-personas-hub-tree-view: backlog
+  epic-2: in-progress
+  2-1-agents-personas-hub-tree-view: done
   2-2-terminal-clipboard-execution-dispatcher: backlog
   2-3-interactive-command-palette-registry: backlog
   epic-2-retrospective: optional
