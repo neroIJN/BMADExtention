@@ -44,7 +44,7 @@ development_status:
 
   epic-2: in-progress
   2-1-agents-personas-hub-tree-view: done
-  2-2-terminal-clipboard-execution-dispatcher: backlog
+  2-2-terminal-clipboard-execution-dispatcher: done
   2-3-interactive-command-palette-registry: backlog
   epic-2-retrospective: optional
 

@@ -2,9 +2,9 @@
 title: 'Story 2.2: Terminal & Clipboard Execution Dispatcher'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context:
   - '_bmad-output/planning-artifacts/architecture/architecture-BMADExtention-2026-09-18/ARCHITECTURE-SPINE.md'
   - '_bmad-output/planning-artifacts/epics.md'
@@ -54,10 +54,10 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/core/command-formatter.ts` -- Implement CLI command and prompt formatting logic
-- [ ] `src/adapters/execution-dispatcher.ts` -- Implement `ExecutionDispatcher` with terminal reuse and clipboard fallback
-- [ ] `src/extension.ts` -- Connect dispatcher to skill execution and agent talk commands
-- [ ] `test/command-formatter.test.ts` -- Unit tests for formatting logic
+- [x] `src/core/command-formatter.ts` -- Implement CLI command and prompt formatting logic
+- [x] `src/adapters/execution-dispatcher.ts` -- Implement `ExecutionDispatcher` with terminal reuse and clipboard fallback
+- [x] `src/extension.ts` -- Connect dispatcher to skill execution and agent talk commands
+- [x] `test/command-formatter.test.ts` -- Unit tests for formatting logic
 
 **Acceptance Criteria:**
 - In terminal mode, executing a skill sends command to `"BMAD Agent"` terminal.
@@ -65,7 +65,17 @@ context:
 - All unit tests pass and extension builds cleanly.
 
 ## Implementation Notes
+- Pure domain command and prompt formatting in `src/core/command-formatter.ts` generates both slash-commands (`/bmad-build`) and CLI commands (`npx bmad ...`), and conversational prompts with persona guidelines.
+- `ExecutionDispatcher` in `src/adapters/execution-dispatcher.ts` respects `bmad.cliRunner`, reuses the `"BMAD Agent"` terminal, and gracefully falls back to clipboard writing if the terminal is inaccessible.
+- Integrated into `bmad.runSkill`, `bmad.talkToAgent`, `bmad.runSkillFromTree`, and `bmad.talkToAgentFromTree`.
 
 ## Spec Change Log
+- 2026-09-18: Initial implementation and verification of Story 2.2.
 
 ## Review Triage Log
+- Peer Review / Verification Checks:
+  - Acceptance Criteria 1: Terminal mode reuses named `"BMAD Agent"` terminal and executes CLI commands - PASS.
+  - Acceptance Criteria 2: Clipboard mode writes formatted prompt to clipboard with toast notification - PASS.
+  - Acceptance Criteria 3: 51 unit tests passing, clean dual bundles compiled - PASS (`npm test` and `npm run build`).
+- Decision: ACCEPTED without blockers.
+
