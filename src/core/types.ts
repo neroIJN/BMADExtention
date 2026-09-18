@@ -64,3 +64,45 @@ export interface BmadManifest {
   modules?: BmadManifestModule[];
   ides?: string[];
 }
+
+/**
+ * Fully resolved, absolute filesystem paths for BMAD artifacts and project directories.
+ */
+export interface BmadResolvedPaths {
+  outputFolder: string;
+  planningArtifacts: string;
+  implementationArtifacts: string;
+  testArtifacts: string;
+  projectKnowledge: string;
+  bmadBuilderOutputFolder?: string;
+  bmadBuilderReports?: string;
+  testDesignOutput?: string;
+  testReviewOutput?: string;
+  traceOutput?: string;
+  [key: string]: string | undefined;
+}
+
+/**
+ * Parsed configuration settings from BMAD TOML and YAML files.
+ */
+export interface BmadConfig {
+  projectName?: string;
+  userSkillLevel?: string;
+  userName?: string;
+  communicationLanguage?: string;
+  documentOutputLanguage?: string;
+  rawValues: Record<string, any>;
+}
+
+/**
+ * Result returned by the configuration and path resolver engine.
+ */
+export interface ConfigResolverResult {
+  isSuccess: boolean;
+  rootPath: string;
+  paths: BmadResolvedPaths;
+  config: BmadConfig;
+  diagnostics: string[];
+  sourceFiles: string[];
+}
+

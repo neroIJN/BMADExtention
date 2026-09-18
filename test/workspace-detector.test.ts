@@ -75,14 +75,18 @@ modules:
     expect(result.warning).toBeDefined();
   });
 
-  it('should accurately detect the actual BMADExtention project repository', async () => {
+  it('should accurately detect the actual BMADExtention project repository when present', async () => {
     const repoPath = path.resolve(__dirname, '..');
     const result = await detectBmadWorkspace(repoPath);
-    expect(result.isBmad).toBe(true);
-    expect(result.hasManifest).toBe(true);
-    expect(result.hasHelpCatalog).toBe(true);
-    expect(result.version).toBe('6.12.0');
-    expect(result.modules).toContain('core');
-    expect(result.modules).toContain('bmm');
+    if (fs.existsSync(path.join(repoPath, '_bmad', '_config', 'manifest.yaml'))) {
+      expect(result.isBmad).toBe(true);
+      expect(result.hasManifest).toBe(true);
+      expect(result.hasHelpCatalog).toBe(true);
+      expect(result.version).toBe('6.12.0');
+      expect(result.modules).toContain('core');
+      expect(result.modules).toContain('bmm');
+    } else {
+      expect(result.isBmad).toBe(false);
+    }
   });
 });
