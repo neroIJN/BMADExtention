@@ -1,0 +1,142 @@
+{
+  "name": "bmad-vscode-extension",
+  "displayName": "BMAD Method Visualizer & Helper",
+  "description": "Visualizer, Cockpit, and Interactive Assistant for the BMad Method (BMAD) multi-agent development framework",
+  "version": "0.1.0",
+  "publisher": "neroIJN",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/neroIJN/BMADExtention.git"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages",
+    "Visualization"
+  ],
+  "keywords": [
+    "bmad",
+    "ai",
+    "agents",
+    "visualizer",
+    "workflow",
+    "kanban"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "bmad-explorer",
+          "title": "BMAD Method",
+          "icon": "media/icons/bmad-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "bmad-explorer": [
+        {
+          "id": "bmad.views.lifecycle",
+          "name": "Lifecycle & Workflows",
+          "when": "bmad:hasBmadProject"
+        },
+        {
+          "id": "bmad.views.agents",
+          "name": "Agents & Personas",
+          "when": "bmad:hasBmadProject"
+        },
+        {
+          "id": "bmad.views.sprint",
+          "name": "Sprint & Stories",
+          "when": "bmad:hasBmadProject"
+        },
+        {
+          "id": "bmad.views.artifacts",
+          "name": "Artifacts Explorer",
+          "when": "bmad:hasBmadProject"
+        },
+        {
+          "id": "bmad.views.welcome",
+          "name": "BMAD Method",
+          "when": "!bmad:hasBmadProject"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "bmad.openDashboard",
+        "title": "Open Visualizer Dashboard",
+        "category": "BMAD"
+      },
+      {
+        "command": "bmad.statusCheck",
+        "title": "Check Project Status & Recommendations",
+        "category": "BMAD"
+      },
+      {
+        "command": "bmad.runSkill",
+        "title": "Run Skill...",
+        "category": "BMAD"
+      },
+      {
+        "command": "bmad.talkToAgent",
+        "title": "Talk to Agent / Switch Persona...",
+        "category": "BMAD"
+      }
+    ],
+    "configuration": {
+      "title": "BMAD Extension",
+      "properties": {
+        "bmad.autoDetectWorkspace": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically detect BMAD installation in workspace."
+        },
+        "bmad.cliRunner": {
+          "type": "string",
+          "enum": [
+            "terminal",
+            "clipboard"
+          ],
+          "default": "terminal",
+          "description": "Execution target for BMAD skills."
+        },
+        "bmad.refreshDebounceMs": {
+          "type": "number",
+          "default": 300,
+          "description": "Debounce interval in milliseconds for file system watcher."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "compile:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
+    "compile:webview": "vite build",
+    "compile": "npm run compile:ext && npm run compile:webview",
+    "watch:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch",
+    "watch:webview": "vite build --watch",
+    "build": "npm run compile",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "csv-parse": "^5.5.5",
+    "js-yaml": "^4.1.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.8.2",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.20.2",
+    "preact": "^10.20.1",
+    "typescript": "^5.4.0",
+    "vite": "^5.2.0",
+    "vitest": "^1.4.0"
+  }
+}
