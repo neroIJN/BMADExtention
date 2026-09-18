@@ -8,6 +8,7 @@ import { StatusBarManager } from './adapters/status-bar-manager';
 import { AgentsTreeProvider } from './adapters/agents-tree-provider';
 import { ArtifactsTreeProvider } from './adapters/artifacts-tree-provider';
 import { MemlogInspectorPanel } from './adapters/memlog-inspector-panel';
+import { RubricValidatorPanel } from './adapters/rubric-validator-panel';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
@@ -344,6 +345,46 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   );
 
+  const validateDocumentCmd = vscode.commands.registerCommand(
+    'bmad.validateDocument',
+    async (targetArg?: any) => {
+      let targetPath: string | undefined;
+      if (typeof targetArg === 'string') {
+        targetPath = targetArg;
+      } else if (targetArg && 'fsPath' in targetArg) {
+        targetPath = (targetArg as vscode.Uri).fsPath;
+      } else if (targetArg && 'artifact' in targetArg && targetArg.artifact) {
+        targetPath = targetArg.artifact.absolutePath;
+      }
+
+      if (!targetPath && rootPath) {
+        // Collect candidate markdown documents from artifactsProvider
+        const artifactItems = artifactsProvider?.getCategories().flatMap((c) => c.artifacts) || [];
+        const mdArtifacts = artifactItems.filter((a) => a.extension === '.md');
+        if (mdArtifacts.length > 0) {
+          const items = mdArtifacts.map((a) => ({
+            label: `$(file-text) ${a.fileName}`,
+            description: a.relativePath,
+            filePath: a.absolutePath
+          }));
+          const selected = await vscode.window.showQuickPick(items, {
+            title: 'BMAD Rubric — Select Document to Validate',
+            placeHolder: 'Select a PRD, specification, or review report to evaluate...'
+          });
+          if (selected) {
+            targetPath = selected.filePath;
+          }
+        }
+      }
+
+      if (targetPath) {
+        await RubricValidatorPanel.createOrShow(context.extensionUri, targetPath);
+      } else {
+        vscode.window.showInformationMessage('No document selected to validate.');
+      }
+    }
+  );
+
   context.subscriptions.push(
     openDashboardCmd,
     statusCheckCmd,
@@ -357,6 +398,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     refreshArtifactsCmd,
     openArtifactCmd,
     inspectMemlogCmd,
+    validateDocumentCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
     openArtifactFromTreeCmd

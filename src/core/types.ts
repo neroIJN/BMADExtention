@@ -296,3 +296,53 @@ export interface BmadMemlogFilter {
   query?: string;
 }
 
+/**
+ * Overall quality gate verdict from rubric validation.
+ */
+export type BmadValidationVerdict = 'PASS' | 'CONCERNS' | 'FAIL';
+
+/**
+ * Finding severity grades according to BMAD review triage principles.
+ */
+export type BmadFindingSeverity = 'critical' | 'high' | 'medium' | 'low';
+
+/**
+ * A single defect, gap, or improvement finding identified during review or validation.
+ */
+export interface BmadValidationFinding {
+  id: string;
+  severity: BmadFindingSeverity;
+  category: string;
+  title: string;
+  description: string;
+  recommendation?: string;
+  filePath: string;
+  lineNumber?: number;
+  columnNumber?: number;
+}
+
+/**
+ * Full scorecard report produced by rubric evaluation or parsed from review artifacts.
+ */
+export interface BmadValidationReport {
+  id: string;
+  title: string;
+  targetFile: string;
+  evaluatedAt: string;
+  verdict: BmadValidationVerdict;
+  score: number;
+  summary: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+    total: number;
+  };
+  rubricCategories: Array<{
+    name: string;
+    score: number;
+    status: 'pass' | 'concerns' | 'fail';
+    details: string;
+  }>;
+  findings: BmadValidationFinding[];
+}
