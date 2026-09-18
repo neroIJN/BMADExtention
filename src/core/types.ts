@@ -175,5 +175,39 @@ export interface BmadProjectStatus {
   recommendations: BmadSkillRecommendation[];
 }
 
+/**
+ * Represents an individual agent / persona from BMAD configurations.
+ */
+export interface BmadAgentNode {
+  id: string;
+  name: string;
+  title: string;
+  module: string;
+  team: string;
+  icon: string;
+  description: string;
+}
+
+/**
+ * Represents a team / domain grouping of agents.
+ */
+export interface BmadAgentTeam {
+  id: string;
+  name: string;
+  agents: BmadAgentNode[];
+}
+
+/**
+ * Tree node used by the Agents Tree Provider.
+ */
+export type BmadAgentTreeItemType = 'team' | 'agent';
+
+export interface BmadAgentTreeNode {
+  type: BmadAgentTreeItemType;
+  team?: BmadAgentTeam;
+  agent?: BmadAgentNode;
+}
+
+
 
 
