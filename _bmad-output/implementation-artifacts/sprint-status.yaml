@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-18-2026 21:20
-last_updated: 09-18-2026 22:45
+last_updated: 09-19-2026 01:38
 project: BMADExtention
 project_key: NOKEY
 tracking_system: file-system
@@ -42,10 +42,10 @@ development_status:
   1-4-inline-tree-actions-status-bar-indicator: done
   epic-1-retrospective: optional
 
-  epic-2: in-progress
+  epic-2: done
   2-1-agents-personas-hub-tree-view: done
   2-2-terminal-clipboard-execution-dispatcher: done
-  2-3-interactive-command-palette-registry: backlog
+  2-3-interactive-command-palette-registry: done
   epic-2-retrospective: optional
 
   epic-3: backlog

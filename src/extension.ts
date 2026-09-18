@@ -5,6 +5,7 @@ import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { StatusBarManager } from './adapters/status-bar-manager';
 import { AgentsTreeProvider } from './adapters/agents-tree-provider';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
+import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
   BmadAgentTreeNode,
   BmadDetectionResult,
@@ -103,9 +104,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     if (workspaceFolders && workspaceFolders.length > 0) {
       const refreshed = await detectBmadWorkspace(workspaceFolders[0].uri.fsPath);
       if (refreshed.isBmad) {
-        vscode.window.showInformationMessage(
-          `BMAD Method v${refreshed.version ?? 'unknown'} active. Modules: ${refreshed.modules?.join(', ')}`
+        const choice = await vscode.window.showInformationMessage(
+          `BMAD Method v${refreshed.version ?? 'unknown'} active. Modules: ${refreshed.modules?.join(', ')}`,
+          'View Recommendations',
+          'Dismiss'
         );
+        if (choice === 'View Recommendations') {
+          vscode.commands.executeCommand('bmad.showRecommendations');
+        }
       } else {
         vscode.window.showWarningMessage('No BMAD installation detected in the current workspace.');
       }
@@ -117,8 +123,36 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const runSkillCmd = vscode.commands.registerCommand('bmad.runSkill', async (skillId?: string) => {
     if (skillId && executionDispatcher) {
       await executionDispatcher.dispatchSkill(skillId);
-    } else if (executionDispatcher) {
-      await executionDispatcher.dispatchSkill('bmad-build');
+      return;
+    }
+
+    if (lifecycleProvider && executionDispatcher) {
+      const selectedSkill = await CommandPaletteManager.promptSkillSelection(
+        lifecycleProvider.getPhases()
+      );
+      if (selectedSkill) {
+        await executionDispatcher.dispatchSkill(selectedSkill);
+      }
+    }
+  });
+
+  const refreshWorkspaceCmd = vscode.commands.registerCommand('bmad.refreshWorkspace', async () => {
+    if (workspaceFolders && workspaceFolders.length > 0) {
+      rootPath = workspaceFolders[0].uri.fsPath;
+      detectionResult = await detectBmadWorkspace(rootPath);
+      await vscode.commands.executeCommand('setContext', 'bmad:hasBmadProject', detectionResult.isBmad);
+      if (detectionResult.isBmad) {
+        activeConfig = await resolveBmadConfig(rootPath);
+        await lifecycleProvider?.load(rootPath, activeConfig.paths);
+        await agentsProvider?.load(rootPath);
+        if (lifecycleProvider) {
+          statusBarManager?.update(lifecycleProvider.getPhases());
+        }
+        vscode.window.showInformationMessage('BMAD workspace state and manifests refreshed.');
+      } else {
+        statusBarManager?.hide();
+        vscode.window.showWarningMessage('No BMAD installation detected in current workspace.');
+      }
     }
   });
 
@@ -127,7 +161,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       return;
     }
 
-    const allAgents = agentsProvider.getTeams().flatMap((t) => t.agents);
+    const teams = agentsProvider.getTeams();
+    const allAgents = teams.flatMap((t) => t.agents);
     if (allAgents.length === 0) {
       vscode.window.showInformationMessage('No BMAD personas found in current workspace.');
       return;
@@ -141,20 +176,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
     }
 
-    const items = allAgents.map((a) => ({
-      label: `${a.icon} ${a.name} — ${a.title}`,
-      description: a.module.toUpperCase(),
-      detail: a.description,
-      agent: a
-    }));
-
-    const selected = await vscode.window.showQuickPick(items, {
-      title: 'BMAD Personas Hub — Select Active Agent',
-      placeHolder: 'Choose an agent persona to converse or consult with...'
-    });
-
-    if (selected && selected.agent) {
-      await executionDispatcher.dispatchAgent(selected.agent);
+    const selectedAgent = await CommandPaletteManager.promptAgentSelection(teams);
+    if (selectedAgent) {
+      await executionDispatcher.dispatchAgent(selectedAgent);
     }
   });
 
@@ -246,6 +270,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     talkToAgentFromTreeCmd,
     refreshAgentsCmd,
     refreshLifecycleCmd,
+    refreshWorkspaceCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
     openArtifactFromTreeCmd

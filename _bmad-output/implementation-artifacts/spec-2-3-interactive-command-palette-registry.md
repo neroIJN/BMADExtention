@@ -2,7 +2,7 @@
 title: 'Story 2.3: Interactive Command Palette Registry'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context:
@@ -54,10 +54,10 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/adapters/command-palette-manager.ts` -- Implement skill selector QuickPick with menu codes and phase groupings
-- [ ] `package.json` -- Register `bmad.refreshWorkspace` and all command palette contributions
-- [ ] `src/extension.ts` -- Wire CommandPaletteManager to execution dispatcher and tree providers
-- [ ] `test/command-palette.test.ts` -- Unit tests for palette items and fuzzy filtering
+- [x] `src/adapters/command-palette-manager.ts` -- Implement skill selector QuickPick with menu codes and phase groupings
+- [x] `package.json` -- Register `bmad.refreshWorkspace` and all command palette contributions
+- [x] `src/extension.ts` -- Wire CommandPaletteManager to execution dispatcher and tree providers
+- [x] `test/command-palette.test.ts` -- Unit tests for palette items and fuzzy filtering
 
 **Acceptance Criteria:**
 - All BMAD commands appear under category "BMAD" in Command Palette.
@@ -65,7 +65,12 @@ context:
 - All unit tests pass and extension builds cleanly.
 
 ## Implementation Notes
+- Created `CommandPaletteManager` (`src/adapters/command-palette-manager.ts`) supporting fuzzy QuickPick item builders and interactive pickers for both skills (grouped by lifecycle phase) and agent personas (grouped by team).
+- Registered `bmad.refreshWorkspace` in `package.json` with category `BMAD` and icon `$(refresh)`.
+- Wired `bmad.runSkill` to trigger `CommandPaletteManager.promptSkillSelection` and `bmad.talkToAgent` to trigger `CommandPaletteManager.promptAgentSelection` when invoked without arguments.
+- Added comprehensive unit tests in `test/command-palette.test.ts` (10 tests) with `vi.hoisted()` for VS Code mock isolation. All 61 test cases pass cleanly.
 
 ## Spec Change Log
+- 2026-09-19: Completed implementation of Story 2.3 and verified all acceptance criteria.
 
 ## Review Triage Log
