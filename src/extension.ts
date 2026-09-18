@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
 import { detectBmadWorkspace } from './core/workspace-detector';
 import { resolveBmadConfig } from './core/config-resolver';
+import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { BmadDetectionResult, ConfigResolverResult } from './core/types';
 
 let outputChannel: vscode.OutputChannel | undefined;
 let activeConfig: ConfigResolverResult | undefined;
+let lifecycleProvider: LifecycleTreeProvider | undefined;
 
 /**
  * Extension activation entrypoint.
@@ -16,7 +18,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   context.subscriptions.push(outputChannel);
   outputChannel.appendLine('[BMAD] Initializing BMAD Method Visualizer & Helper...');
 
-  // 2. Detect workspace status
+  // 2. Initialize Tree View Providers
+  lifecycleProvider = new LifecycleTreeProvider();
+  context.subscriptions.push(
+    vscode.window.registerTreeDataProvider('bmad.views.lifecycle', lifecycleProvider)
+  );
+
+  // 3. Detect workspace status
   const workspaceFolders = vscode.workspace.workspaceFolders;
   let detectionResult: BmadDetectionResult = {
     isBmad: false,
@@ -31,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     detectionResult = await detectBmadWorkspace(rootPath);
   }
 
-  // 3. Set context key to govern view visibility in package.json
+  // 4. Set context key to govern view visibility in package.json
   await vscode.commands.executeCommand('setContext', 'bmad:hasBmadProject', detectionResult.isBmad);
 
   if (detectionResult.isBmad && rootPath) {
@@ -53,6 +61,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
           outputChannel.appendLine(`[BMAD Warning] ${diag}`);
         }
       }
+
+      // Populate Lifecycle tree view
+      await lifecycleProvider.load(rootPath, activeConfig.paths);
     } catch (err: any) {
       outputChannel.appendLine(`[BMAD Error] Failed to resolve config: ${err?.message || String(err)}`);
     }
@@ -92,7 +103,20 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.window.showInformationMessage('BMAD Persona Selector initialized.');
   });
 
-  context.subscriptions.push(openDashboardCmd, statusCheckCmd, runSkillCmd, talkToAgentCmd);
+  const refreshLifecycleCmd = vscode.commands.registerCommand('bmad.refreshLifecycle', async () => {
+    if (rootPath && activeConfig && lifecycleProvider) {
+      await lifecycleProvider.load(rootPath, activeConfig.paths);
+      outputChannel?.appendLine('[BMAD] Lifecycle tree view refreshed.');
+    }
+  });
+
+  context.subscriptions.push(
+    openDashboardCmd,
+    statusCheckCmd,
+    runSkillCmd,
+    talkToAgentCmd,
+    refreshLifecycleCmd
+  );
   outputChannel.appendLine('[BMAD] Activation complete.');
 }
 
