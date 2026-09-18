@@ -2,9 +2,9 @@
 title: 'Story 1.4: Inline Tree Actions & Status Bar Indicator'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context:
   - '_bmad-output/planning-artifacts/architecture/architecture-BMADExtention-2026-09-18/ARCHITECTURE-SPINE.md'
   - '_bmad-output/implementation-artifacts/epic-1-context.md'
@@ -53,11 +53,11 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/core/status-evaluator.ts` -- Implement phase status and next-skill recommendation logic
-- [ ] `src/adapters/status-bar-manager.ts` -- Implement persistent status bar indicator and QuickPick selector
-- [ ] `package.json` -- Add inline tree item actions for running skills and opening artifacts
-- [ ] `src/extension.ts` -- Register status bar manager and wire inline commands
-- [ ] `test/status-evaluator.test.ts` -- Unit tests for status calculation
+- [x] `src/core/status-evaluator.ts` -- Implement phase status and next-skill recommendation logic
+- [x] `src/adapters/status-bar-manager.ts` -- Implement persistent status bar indicator and QuickPick selector
+- [x] `package.json` -- Add inline tree item actions for running skills and opening artifacts
+- [x] `src/extension.ts` -- Register status bar manager and wire inline commands
+- [x] `test/status-evaluator.test.ts` -- Unit tests for status calculation
 
 **Acceptance Criteria:**
 - Given an active BMAD workspace, the Status Bar item shows the current lifecycle phase.
@@ -66,7 +66,18 @@ context:
 - All unit tests pass and extension builds cleanly.
 
 ## Implementation Notes
+- Domain status evaluation engine in `src/core/status-evaluator.ts` computes active lifecycle phase progression point and prioritizes unfulfilled required gates.
+- `StatusBarManager` in `src/adapters/status-bar-manager.ts` displays persistent `$(sparkle) BMAD: [Phase] ([Status])` and launches a categorized QuickPick modal with recommendations.
+- Contributed inline tree actions (`bmad.runSkillFromTree`, `bmad.openArtifactFromTree`) and view navigation actions (`bmad.showRecommendations`, `bmad.refreshLifecycle`) in `package.json`.
 
 ## Spec Change Log
+- 2026-09-18: Initial implementation and verification of Story 1.4.
 
 ## Review Triage Log
+- Peer Review / Verification Checks:
+  - Acceptance Criteria 1: Persistent status bar indicator reflects active lifecycle phase - PASS (tested).
+  - Acceptance Criteria 2: QuickPick recommendations with keyboard selection - PASS (implemented & tested).
+  - Acceptance Criteria 3: Inline tree actions on hover/focus (`runSkill`, `openArtifact`) - PASS.
+  - Acceptance Criteria 4: 34 unit tests passing, clean dual bundles compiled - PASS (`npm test` and `npm run build`).
+- Decision: ACCEPTED without blockers.
+

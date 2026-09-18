@@ -93,14 +93,49 @@
         "title": "Refresh Lifecycle & Workflows",
         "category": "BMAD",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "bmad.showRecommendations",
+        "title": "Show Recommended Next Skills",
+        "category": "BMAD",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "bmad.runSkillFromTree",
+        "title": "Run Skill",
+        "category": "BMAD",
+        "icon": "$(play)"
+      },
+      {
+        "command": "bmad.openArtifactFromTree",
+        "title": "Open Artifact",
+        "category": "BMAD",
+        "icon": "$(go-to-file)"
       }
     ],
     "menus": {
       "view/title": [
         {
+          "command": "bmad.showRecommendations",
+          "when": "view == bmad.views.lifecycle",
+          "group": "navigation@1"
+        },
+        {
           "command": "bmad.refreshLifecycle",
           "when": "view == bmad.views.lifecycle",
-          "group": "navigation"
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "bmad.runSkillFromTree",
+          "when": "view == bmad.views.lifecycle && viewItem == bmadSkill",
+          "group": "inline@1"
+        },
+        {
+          "command": "bmad.openArtifactFromTree",
+          "when": "view == bmad.views.lifecycle && viewItem == bmadSkill",
+          "group": "inline@2"
         }
       ]
     },

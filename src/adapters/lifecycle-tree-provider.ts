@@ -59,6 +59,13 @@ export class LifecycleTreeProvider implements vscode.TreeDataProvider<BmadTreeNo
     }
   }
 
+  /**
+   * Returns current lifecycle phases.
+   */
+  public getPhases(): BmadLifecyclePhase[] {
+    return this.phases;
+  }
+
   getTreeItem(element: BmadTreeNode): vscode.TreeItem {
     if (element.type === 'phase' && element.phase) {
       const phase = element.phase;

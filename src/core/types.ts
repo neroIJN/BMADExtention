@@ -154,4 +154,26 @@ export interface BmadTreeNode {
   skill?: BmadSkillNode;
 }
 
+/**
+ * Recommendation for the next skill to execute in the BMAD lifecycle.
+ */
+export interface BmadSkillRecommendation {
+  skill: BmadSkillNode;
+  reason: string;
+  priority: 'high' | 'normal';
+}
+
+/**
+ * High-level evaluated status of the active BMAD project.
+ */
+export interface BmadProjectStatus {
+  activePhaseId: string;
+  activePhaseLabel: string;
+  phaseStatus: 'not-started' | 'in-progress' | 'completed';
+  statusBarText: string;
+  statusBarTooltip: string;
+  recommendations: BmadSkillRecommendation[];
+}
+
+
 
