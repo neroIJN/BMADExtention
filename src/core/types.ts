@@ -253,3 +253,46 @@ export interface BmadArtifactTreeNode {
   category?: BmadArtifactCategory;
   artifact?: BmadArtifactItem;
 }
+
+/**
+ * Metadata recorded in .memlog.md YAML frontmatter.
+ */
+export interface BmadMemlogMetadata {
+  topic?: string;
+  goal?: string;
+  updated?: string;
+  [key: string]: string | undefined;
+}
+
+/**
+ * An individual entry in a .memlog.md file.
+ */
+export interface BmadMemlogEntry {
+  id: string;
+  index: number;
+  type: string;
+  author?: string;
+  text: string;
+  raw: string;
+}
+
+/**
+ * Parsed structure of a .memlog.md file.
+ */
+export interface BmadMemlogDocument {
+  filePath: string;
+  metadata: BmadMemlogMetadata;
+  entries: BmadMemlogEntry[];
+  entryCount: number;
+  availableTypes: string[];
+}
+
+/**
+ * Filter criteria for memlog entries.
+ */
+export interface BmadMemlogFilter {
+  type?: string;
+  author?: string;
+  query?: string;
+}
+

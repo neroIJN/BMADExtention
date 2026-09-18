@@ -1,10 +1,13 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { detectBmadWorkspace } from './core/workspace-detector';
 import { resolveBmadConfig } from './core/config-resolver';
+import { findMemlogFiles } from './core/memlog-parser';
 import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { StatusBarManager } from './adapters/status-bar-manager';
 import { AgentsTreeProvider } from './adapters/agents-tree-provider';
 import { ArtifactsTreeProvider } from './adapters/artifacts-tree-provider';
+import { MemlogInspectorPanel } from './adapters/memlog-inspector-panel';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
@@ -297,6 +300,50 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   });
 
+  const inspectMemlogCmd = vscode.commands.registerCommand(
+    'bmad.inspectMemlog',
+    async (targetPath?: string) => {
+      if (!rootPath) {
+        vscode.window.showWarningMessage('No workspace open to locate memory logs.');
+        return;
+      }
+
+      let memlogPath = targetPath;
+      if (!memlogPath) {
+        const foundFiles = await findMemlogFiles(rootPath);
+        if (foundFiles.length === 0) {
+          const choice = await vscode.window.showInformationMessage(
+            'No .memlog.md files detected in this project yet.',
+            'Learn About Memlog',
+            'Close'
+          );
+          if (choice === 'Learn About Memlog') {
+            vscode.commands.executeCommand('bmad.runSkill', 'bmad-help');
+          }
+          return;
+        } else if (foundFiles.length === 1) {
+          memlogPath = foundFiles[0];
+        } else {
+          const items = foundFiles.map((fp) => ({
+            label: `$(history) ${path.relative(rootPath!, fp)}`,
+            description: fp,
+            filePath: fp
+          }));
+          const selected = await vscode.window.showQuickPick(items, {
+            title: 'BMAD Memlog — Select Working Memory Log',
+            placeHolder: 'Choose a .memlog.md to inspect its chronological timeline...'
+          });
+          if (!selected) {
+            return;
+          }
+          memlogPath = selected.filePath;
+        }
+      }
+
+      await MemlogInspectorPanel.createOrShow(context.extensionUri, memlogPath);
+    }
+  );
+
   context.subscriptions.push(
     openDashboardCmd,
     statusCheckCmd,
@@ -309,6 +356,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     refreshWorkspaceCmd,
     refreshArtifactsCmd,
     openArtifactCmd,
+    inspectMemlogCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
     openArtifactFromTreeCmd
