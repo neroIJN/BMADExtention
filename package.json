@@ -134,6 +134,18 @@
         "title": "Refresh Workspace & Manifests",
         "category": "BMAD",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "bmad.openArtifact",
+        "title": "Open Artifact",
+        "category": "BMAD",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "bmad.refreshArtifacts",
+        "title": "Refresh Artifacts Explorer",
+        "category": "BMAD",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
@@ -152,9 +164,19 @@
           "command": "bmad.refreshAgents",
           "when": "view == bmad.views.agents",
           "group": "navigation"
+        },
+        {
+          "command": "bmad.refreshArtifacts",
+          "when": "view == bmad.views.artifacts",
+          "group": "navigation"
         }
       ],
       "view/item/context": [
+        {
+          "command": "bmad.openArtifact",
+          "when": "view == bmad.views.artifacts && viewItem == bmadArtifactItem",
+          "group": "inline@1"
+        },
         {
           "command": "bmad.runSkillFromTree",
           "when": "view == bmad.views.lifecycle && viewItem == bmadSkill",

@@ -4,10 +4,12 @@ import { resolveBmadConfig } from './core/config-resolver';
 import { LifecycleTreeProvider } from './adapters/lifecycle-tree-provider';
 import { StatusBarManager } from './adapters/status-bar-manager';
 import { AgentsTreeProvider } from './adapters/agents-tree-provider';
+import { ArtifactsTreeProvider } from './adapters/artifacts-tree-provider';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
   BmadAgentTreeNode,
+  BmadArtifactTreeNode,
   BmadDetectionResult,
   BmadTreeNode,
   ConfigResolverResult
@@ -17,6 +19,7 @@ let outputChannel: vscode.OutputChannel | undefined;
 let activeConfig: ConfigResolverResult | undefined;
 let lifecycleProvider: LifecycleTreeProvider | undefined;
 let agentsProvider: AgentsTreeProvider | undefined;
+let artifactsProvider: ArtifactsTreeProvider | undefined;
 let statusBarManager: StatusBarManager | undefined;
 let executionDispatcher: ExecutionDispatcher | undefined;
 
@@ -33,11 +36,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   // 2. Initialize Tree View Providers, Status Bar Manager & Execution Dispatcher
   lifecycleProvider = new LifecycleTreeProvider();
   agentsProvider = new AgentsTreeProvider();
+  artifactsProvider = new ArtifactsTreeProvider();
   statusBarManager = new StatusBarManager();
   executionDispatcher = new ExecutionDispatcher();
   context.subscriptions.push(
     vscode.window.registerTreeDataProvider('bmad.views.lifecycle', lifecycleProvider),
     vscode.window.registerTreeDataProvider('bmad.views.agents', agentsProvider),
+    vscode.window.registerTreeDataProvider('bmad.views.artifacts', artifactsProvider),
     statusBarManager
   );
 
@@ -79,9 +84,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         }
       }
 
-      // Populate Lifecycle tree view, Agents tree view, and update status bar
+      // Populate Lifecycle tree view, Agents tree view, Artifacts tree view, and update status bar
       await lifecycleProvider.load(rootPath, activeConfig.paths);
       await agentsProvider.load(rootPath);
+      await artifactsProvider.load(rootPath, activeConfig.paths);
       statusBarManager.update(lifecycleProvider.getPhases());
     } catch (err: any) {
       outputChannel.appendLine(`[BMAD Error] Failed to resolve config: ${err?.message || String(err)}`);
@@ -145,6 +151,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         activeConfig = await resolveBmadConfig(rootPath);
         await lifecycleProvider?.load(rootPath, activeConfig.paths);
         await agentsProvider?.load(rootPath);
+        await artifactsProvider?.load(rootPath, activeConfig.paths);
         if (lifecycleProvider) {
           statusBarManager?.update(lifecycleProvider.getPhases());
         }
@@ -261,6 +268,35 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   );
 
+  const openArtifactCmd = vscode.commands.registerCommand(
+    'bmad.openArtifact',
+    async (filePathOrNode?: string | BmadArtifactTreeNode) => {
+      let filePath: string | undefined;
+      if (typeof filePathOrNode === 'string') {
+        filePath = filePathOrNode;
+      } else if (filePathOrNode?.artifact) {
+        filePath = filePathOrNode.artifact.absolutePath;
+      }
+
+      if (filePath) {
+        try {
+          await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(filePath));
+        } catch (err: any) {
+          vscode.window.showErrorMessage(`Failed to open artifact: ${err?.message || String(err)}`);
+        }
+      } else {
+        vscode.window.showWarningMessage('No artifact file specified to open.');
+      }
+    }
+  );
+
+  const refreshArtifactsCmd = vscode.commands.registerCommand('bmad.refreshArtifacts', async () => {
+    if (rootPath && artifactsProvider) {
+      await artifactsProvider.load(rootPath, activeConfig?.paths);
+      outputChannel?.appendLine('[BMAD] Artifacts explorer refreshed.');
+    }
+  });
+
   context.subscriptions.push(
     openDashboardCmd,
     statusCheckCmd,
@@ -271,6 +307,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     refreshAgentsCmd,
     refreshLifecycleCmd,
     refreshWorkspaceCmd,
+    refreshArtifactsCmd,
+    openArtifactCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
     openArtifactFromTreeCmd

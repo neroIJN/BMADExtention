@@ -208,6 +208,48 @@ export interface BmadAgentTreeNode {
   agent?: BmadAgentNode;
 }
 
+/**
+ * Canonical category IDs for BMAD artifacts.
+ */
+export type BmadArtifactCategoryType =
+  | 'planning'
+  | 'architecture'
+  | 'implementation'
+  | 'test'
+  | 'other';
 
+/**
+ * Represents an individual project artifact/deliverable.
+ */
+export interface BmadArtifactItem {
+  id: string;
+  fileName: string;
+  relativePath: string;
+  absolutePath: string;
+  category: BmadArtifactCategoryType;
+  sizeBytes: number;
+  sizeFormatted: string;
+  modifiedAt: string;
+  extension: string;
+}
 
+/**
+ * Represents a logical category containing grouped artifacts.
+ */
+export interface BmadArtifactCategory {
+  id: BmadArtifactCategoryType;
+  label: string;
+  order: number;
+  artifacts: BmadArtifactItem[];
+}
 
+/**
+ * Tree node used by the Artifacts Tree Provider.
+ */
+export type BmadArtifactTreeItemType = 'category' | 'artifact';
+
+export interface BmadArtifactTreeNode {
+  type: BmadArtifactTreeItemType;
+  category?: BmadArtifactCategory;
+  artifact?: BmadArtifactItem;
+}
