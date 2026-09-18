@@ -9,6 +9,7 @@ import { AgentsTreeProvider } from './adapters/agents-tree-provider';
 import { ArtifactsTreeProvider } from './adapters/artifacts-tree-provider';
 import { MemlogInspectorPanel } from './adapters/memlog-inspector-panel';
 import { RubricValidatorPanel } from './adapters/rubric-validator-panel';
+import { TeaDashboardPanel } from './adapters/tea-dashboard-panel';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
@@ -385,6 +386,17 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }
   );
 
+  const openTeaDashboardCmd = vscode.commands.registerCommand(
+    'bmad.openTeaDashboard',
+    async () => {
+      if (!rootPath) {
+        vscode.window.showWarningMessage('No workspace open to inspect TEA quality & traceability.');
+        return;
+      }
+      await TeaDashboardPanel.createOrShow(context.extensionUri, rootPath, executionDispatcher);
+    }
+  );
+
   context.subscriptions.push(
     openDashboardCmd,
     statusCheckCmd,
@@ -399,6 +411,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     openArtifactCmd,
     inspectMemlogCmd,
     validateDocumentCmd,
+    openTeaDashboardCmd,
     showRecommendationsCmd,
     runSkillFromTreeCmd,
     openArtifactFromTreeCmd

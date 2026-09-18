@@ -158,6 +158,12 @@
         "title": "Validate Document against Rubric...",
         "category": "BMAD",
         "icon": "$(checklist)"
+      },
+      {
+        "command": "bmad.openTeaDashboard",
+        "title": "Open TEA Quality & Traceability Dashboard",
+        "category": "BMAD",
+        "icon": "$(beaker)"
       }
     ],
     "menus": {

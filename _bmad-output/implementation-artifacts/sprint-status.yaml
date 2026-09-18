@@ -48,11 +48,11 @@ development_status:
   2-3-interactive-command-palette-registry: done
   epic-2-retrospective: optional
 
-  epic-3: in-progress
+  epic-3: done
   3-1-categorized-artifacts-explorer: done
   3-2-memlog-chronological-timeline-inspector: done
   3-3-prd-specification-rubric-validator-viewer: done
-  3-4-tea-quality-traceability-dashboard: backlog
+  3-4-tea-quality-traceability-dashboard: done
   epic-3-retrospective: optional
 
   epic-4: backlog
