@@ -146,6 +146,12 @@
         "title": "Refresh Artifacts Explorer",
         "category": "BMAD",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "bmad.inspectMemlog",
+        "title": "Inspect Memlog Decisions & Timeline...",
+        "category": "BMAD",
+        "icon": "$(history)"
       }
     ],
     "menus": {
