@@ -128,6 +128,12 @@
         "title": "Refresh Agents & Personas",
         "category": "BMAD",
         "icon": "$(refresh)"
+      },
+      {
+        "command": "bmad.refreshWorkspace",
+        "title": "Refresh Workspace & Manifests",
+        "category": "BMAD",
+        "icon": "$(refresh)"
       }
     ],
     "menus": {
