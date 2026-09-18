@@ -87,8 +87,23 @@
         "command": "bmad.talkToAgent",
         "title": "Talk to Agent / Switch Persona...",
         "category": "BMAD"
+      },
+      {
+        "command": "bmad.refreshLifecycle",
+        "title": "Refresh Lifecycle & Workflows",
+        "category": "BMAD",
+        "icon": "$(refresh)"
       }
     ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "bmad.refreshLifecycle",
+          "when": "view == bmad.views.lifecycle",
+          "group": "navigation"
+        }
+      ]
+    },
     "configuration": {
       "title": "BMAD Extension",
       "properties": {

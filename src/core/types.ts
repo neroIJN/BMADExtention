@@ -106,3 +106,52 @@ export interface ConfigResolverResult {
   sourceFiles: string[];
 }
 
+/**
+ * Artifact completion status.
+ */
+export type ArtifactStatus = 'completed' | 'in-progress' | 'not-started';
+
+/**
+ * Represents an individual skill within the BMAD lifecycle.
+ */
+export interface BmadSkillNode {
+  id: string;
+  module: string;
+  skill: string;
+  displayName: string;
+  menuCode?: string;
+  description?: string;
+  action?: string;
+  args?: string;
+  phase: string;
+  precededBy?: string;
+  followedBy?: string;
+  required: boolean;
+  outputLocation?: string;
+  outputs?: string;
+  status: ArtifactStatus;
+  artifactPath?: string;
+}
+
+/**
+ * Represents a phase containing grouped BMAD skills.
+ */
+export interface BmadLifecyclePhase {
+  id: string;
+  label: string;
+  order: number;
+  skills: BmadSkillNode[];
+}
+
+/**
+ * Tree node used by the Lifecycle Tree Provider.
+ */
+export type BmadTreeItemType = 'phase' | 'skill';
+
+export interface BmadTreeNode {
+  type: BmadTreeItemType;
+  phase?: BmadLifecyclePhase;
+  skill?: BmadSkillNode;
+}
+
+

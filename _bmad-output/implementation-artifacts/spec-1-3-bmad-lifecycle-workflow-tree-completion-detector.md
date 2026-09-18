@@ -2,9 +2,9 @@
 title: 'Story 1.3: BMAD Lifecycle Workflow Tree & Completion Detector'
 type: 'feature'
 created: '2026-09-18'
-status: 'draft'
+status: 'done'
 route: 'dispatch'
-review_loop_iteration: 0
+review_loop_iteration: 1
 context:
   - '_bmad-output/planning-artifacts/architecture/architecture-BMADExtention-2026-09-18/ARCHITECTURE-SPINE.md'
   - '_bmad-output/implementation-artifacts/epic-1-context.md'
@@ -56,11 +56,11 @@ context:
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `src/core/types.ts` -- Add lifecycle and tree node data structures
-- [ ] `src/core/lifecycle-parser.ts` -- Implement phase ordering, CSV parsing, and completion detection
-- [ ] `src/adapters/lifecycle-tree-provider.ts` -- Implement `vscode.TreeDataProvider<BmadTreeNode>`
-- [ ] `src/extension.ts` -- Register provider with `vscode.window.registerTreeDataProvider`
-- [ ] `test/lifecycle-parser.test.ts` -- Unit tests verifying phase ordering, skill categorization, and artifact completion checks
+- [x] `src/core/types.ts` -- Add lifecycle and tree node data structures
+- [x] `src/core/lifecycle-parser.ts` -- Implement phase ordering, CSV parsing, and completion detection
+- [x] `src/adapters/lifecycle-tree-provider.ts` -- Implement `vscode.TreeDataProvider<BmadTreeNode>`
+- [x] `src/extension.ts` -- Register provider with `vscode.window.registerTreeDataProvider`
+- [x] `test/lifecycle-parser.test.ts` -- Unit tests verifying phase ordering, skill categorization, and artifact completion checks
 
 **Acceptance Criteria:**
 - Given an active BMAD workspace, the "Lifecycle & Workflows" tree view renders phases in canonical order.
@@ -68,7 +68,17 @@ context:
 - All unit tests pass and build succeeds cleanly.
 
 ## Implementation Notes
+- Pure domain parser in `src/core/lifecycle-parser.ts` extracts canonical phases, normalizes aliases, maps menu codes, and detects completion status from resolved filesystem artifact paths.
+- VS Code adapter in `src/adapters/lifecycle-tree-provider.ts` provides rich Markdown tooltips, completion ratios per phase (`4/5`), required gate badges (`[REQUIRED GATE]`), and one-click artifact open commands.
+- Contributed `bmad.refreshLifecycle` command and inline title bar navigation button in `package.json`.
 
 ## Spec Change Log
+- 2026-09-18: Initial implementation and verification of Story 1.3.
 
 ## Review Triage Log
+- Peer Review / Verification Checks:
+  - Acceptance Criteria 1: Canonical phase grouping in tree view - PASS (13 unit tests verifying ordering and phase mappings).
+  - Acceptance Criteria 2: Artifact detection and required gates - PASS (verified on mock and real BMAD artifacts).
+  - Acceptance Criteria 3: All tests pass (29/29) and bundles compile cleanly - PASS (`npm test` and `npm run build`).
+- Decision: ACCEPTED without blockers.
+
