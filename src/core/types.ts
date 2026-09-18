@@ -346,3 +346,47 @@ export interface BmadValidationReport {
   }>;
   findings: BmadValidationFinding[];
 }
+
+/**
+ * Traceability coverage status for a functional requirement.
+ */
+export type BmadTraceStatus = 'covered' | 'partial' | 'uncovered';
+
+/**
+ * Mapping between a functional requirement and its verifying automated test suite.
+ */
+export interface BmadTeaRequirementTrace {
+  id: string;
+  title: string;
+  description?: string;
+  status: BmadTraceStatus;
+  mappedTestFiles: string[];
+  mappedTestCount: number;
+}
+
+/**
+ * Step in the Acceptance Test-Driven Development (ATDD) workflow.
+ */
+export interface BmadAtddPhase {
+  id: string;
+  title: string;
+  status: 'completed' | 'in-progress' | 'pending';
+  description: string;
+}
+
+/**
+ * Overall quality report produced by TEA (Test Architecture Enterprise) analysis.
+ */
+export interface BmadTeaQualityReport {
+  qualityScore: number;
+  totalRequirements: number;
+  coveredRequirements: number;
+  partialRequirements: number;
+  uncoveredRequirements: number;
+  coveragePercentage: number;
+  totalTestFiles: number;
+  traceabilityMatrix: BmadTeaRequirementTrace[];
+  atddChecklist: BmadAtddPhase[];
+  recommendations: string[];
+}
+
