@@ -8,13 +8,15 @@ import {
   BmadDashboardState,
   BmadSkillNode,
   BmadAgentNode,
-  BmadSprintStatusData
+  BmadSprintStatusData,
+  BmadKanbanBoard
 } from '../core/types';
 import { detectBmadWorkspace } from '../core/workspace-detector';
 import { resolveBmadConfig } from '../core/config-resolver';
 import { parseLifecycleHelp } from '../core/lifecycle-parser';
 import { loadAgentsFromWorkspace } from '../core/agent-parser';
 import { buildPipelineDag } from '../core/dag-builder';
+import { parseKanbanBoard } from '../core/kanban-parser';
 import { ExecutionDispatcher } from './execution-dispatcher';
 
 /**
@@ -184,6 +186,7 @@ export class BMADDashboardPanel {
     let skills: BmadSkillNode[] = [];
     let agents: BmadAgentNode[] = [];
     let sprintStatus: BmadSprintStatusData | undefined;
+    let kanban: BmadKanbanBoard | undefined;
 
     if (detection.isBmad) {
       try {
@@ -211,6 +214,11 @@ export class BMADDashboardPanel {
           'implementation-artifacts',
           'sprint-status.yaml'
         );
+        const artifactsDir = path.join(
+          this._workspaceRoot,
+          '_bmad-output',
+          'implementation-artifacts'
+        );
         if (fs.existsSync(sprintPath)) {
           const rawYaml = fs.readFileSync(sprintPath, 'utf8');
           const parsed = yaml.load(rawYaml) as any;
@@ -222,6 +230,7 @@ export class BMADDashboardPanel {
               actionItems: Array.isArray(parsed.action_items) ? parsed.action_items : []
             };
           }
+          kanban = parseKanbanBoard(rawYaml, artifactsDir);
         }
       } catch (err) {
         console.warn('[BMADDashboardPanel] Failed to load sprint-status.yaml:', err);
@@ -240,6 +249,7 @@ export class BMADDashboardPanel {
       agents,
       sprintStatus,
       dag,
+      kanban,
       timestamp: new Date().toISOString()
     };
   }

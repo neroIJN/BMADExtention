@@ -3,6 +3,7 @@ import { useState, useEffect } from 'preact/hooks';
 import { rpcClient } from './rpc-client';
 import { BmadDashboardState } from '../core/types';
 import { PipelineDag } from './components/PipelineDag';
+import { SprintBoard } from './components/SprintBoard';
 
 export function App() {
   const [state, setState] = useState<BmadDashboardState | null>(null);
@@ -260,127 +261,10 @@ export function App() {
             executingSkill={executingSkill}
           />
         ) : (
-          /* Sprint Kanban Board Tab */
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px'
-              }}
-            >
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px' }}>Sprint Kanban Management</h3>
-                <span style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
-                  Live board projected from sprint-status.yaml
-                </span>
-              </div>
-              {state.sprintStatus?.lastUpdated && (
-                <span style={{ fontSize: '11px', color: 'var(--vscode-descriptionForeground)' }}>
-                  Last Updated: {state.sprintStatus.lastUpdated}
-                </span>
-              )}
-            </div>
-
-            {state.sprintStatus ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-                  gap: '12px',
-                  alignItems: 'start'
-                }}
-              >
-                {(['backlog', 'ready-for-dev', 'in-progress', 'review', 'done'] as const).map((colStatus) => {
-                  const stories = Object.entries(state.sprintStatus?.developmentStatus || {}).filter(
-                    ([k, v]) => !k.startsWith('epic-') && !k.endsWith('-retrospective') && v === colStatus
-                  );
-
-                  return (
-                    <div
-                      key={colStatus}
-                      style={{
-                        backgroundColor: 'var(--vscode-sideBar-background, #252526)',
-                        border: '1px solid var(--vscode-panel-border, #333)',
-                        borderRadius: '4px',
-                        padding: '8px'
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          paddingBottom: '8px',
-                          marginBottom: '8px',
-                          borderBottom: '1px solid var(--vscode-panel-border, #333)'
-                        }}
-                      >
-                        <span
-                          style={{
-                            fontWeight: 600,
-                            fontSize: '11px',
-                            textTransform: 'uppercase',
-                            color: getStatusBadgeColor(colStatus)
-                          }}
-                        >
-                          {colStatus}
-                        </span>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            backgroundColor: 'var(--vscode-badge-background, #3a3d41)',
-                            color: 'var(--vscode-badge-foreground, #fff)',
-                            padding: '1px 5px',
-                            borderRadius: '10px'
-                          }}
-                        >
-                          {stories.length}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {stories.length === 0 ? (
-                          <div
-                            style={{
-                              padding: '12px',
-                              textAlign: 'center',
-                              fontSize: '11px',
-                              color: 'var(--vscode-descriptionForeground)'
-                            }}
-                          >
-                            Empty
-                          </div>
-                        ) : (
-                          stories.map(([storyKey]) => (
-                            <div
-                              key={storyKey}
-                              onClick={() => handleOpenStory(storyKey)}
-                              style={{
-                                padding: '8px 10px',
-                                backgroundColor: 'var(--vscode-editor-background, #1e1e1e)',
-                                border: '1px solid var(--vscode-panel-border, #333)',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '11px'
-                              }}
-                            >
-                              <div style={{ fontWeight: 500, wordBreak: 'break-word' }}>{storyKey}</div>
-                            </div>
-                          ))
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <p style={{ color: 'var(--vscode-descriptionForeground)', fontSize: '12px' }}>
-                No sprint-status.yaml tracking file detected in workspace.
-              </p>
-            )}
-          </div>
+          <SprintBoard
+            kanban={state.kanban}
+            onOpenStory={handleOpenStory}
+          />
         )}
       </main>
     </div>
