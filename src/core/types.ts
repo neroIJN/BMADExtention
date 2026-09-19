@@ -390,3 +390,58 @@ export interface BmadTeaQualityReport {
   recommendations: string[];
 }
 
+/**
+ * Envelope types supported by the BMAD JSON-RPC bridge (AD-6).
+ */
+export type BmadRpcType = 'request' | 'response' | 'event';
+
+export interface BmadRpcEnvelope<T = unknown> {
+  id: string;
+  type: BmadRpcType;
+  command: string;
+  payload: T;
+  error?: string;
+}
+
+export type BmadRpcRequest<T = unknown> = BmadRpcEnvelope<T> & { type: 'request' };
+export type BmadRpcResponse<T = unknown> = BmadRpcEnvelope<T> & { type: 'response' };
+export type BmadRpcEvent<T = unknown> = BmadRpcEnvelope<T> & { type: 'event' };
+
+export type BmadRpcHandler<T = any, R = any> = (payload: T) => Promise<R> | R;
+export type BmadRpcEventListener<T = any> = (payload: T) => void;
+
+/**
+ * Sprint board action item model.
+ */
+export interface BmadSprintActionItem {
+  id?: string;
+  title: string;
+  status: 'open' | 'in-progress' | 'done';
+  owner?: string;
+}
+
+/**
+ * Parsed representation of sprint-status.yaml data.
+ */
+export interface BmadSprintStatusData {
+  project?: string;
+  lastUpdated?: string;
+  developmentStatus: Record<string, string>;
+  actionItems?: BmadSprintActionItem[];
+}
+
+/**
+ * State exposed to Webview Dashboard via JSON-RPC.
+ */
+export interface BmadDashboardState {
+  workspaceRoot: string;
+  isBmad: boolean;
+  version?: string;
+  modules?: string[];
+  activeTab: 'pipeline' | 'sprint';
+  skills?: BmadSkillNode[];
+  agents?: BmadAgentNode[];
+  sprintStatus?: BmadSprintStatusData;
+  timestamp: string;
+}
+

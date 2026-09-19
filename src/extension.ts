@@ -10,6 +10,7 @@ import { ArtifactsTreeProvider } from './adapters/artifacts-tree-provider';
 import { MemlogInspectorPanel } from './adapters/memlog-inspector-panel';
 import { RubricValidatorPanel } from './adapters/rubric-validator-panel';
 import { TeaDashboardPanel } from './adapters/tea-dashboard-panel';
+import { BMADDashboardPanel } from './adapters/webview-dashboard-panel';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
@@ -103,12 +104,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   // 5. Register Commands
-  const openDashboardCmd = vscode.commands.registerCommand('bmad.openDashboard', () => {
-    if (!detectionResult.isBmad) {
+  const openDashboardCmd = vscode.commands.registerCommand('bmad.openDashboard', async () => {
+    if (!detectionResult.isBmad || !rootPath) {
       vscode.window.showWarningMessage('No BMAD project detected in current workspace.');
       return;
     }
-    vscode.window.showInformationMessage('BMAD Visualizer Dashboard will open here.');
+    await BMADDashboardPanel.render(context.extensionUri, rootPath, executionDispatcher);
   });
 
   const statusCheckCmd = vscode.commands.registerCommand('bmad.statusCheck', async () => {
