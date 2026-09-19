@@ -431,6 +431,58 @@ export interface BmadSprintStatusData {
 }
 
 /**
+ * Node execution/artifact status in the Pipeline DAG.
+ */
+export type BmadDagNodeStatus = 'pending' | 'in-progress' | 'completed' | 'blocked';
+
+/**
+ * Node representation in the Pipeline DAG.
+ */
+export interface BmadDagNode {
+  id: string;
+  name: string;
+  phaseId: string;
+  phaseLabel: string;
+  phaseOrder: number;
+  description: string;
+  status: BmadDagNodeStatus;
+  precededBy: string[];
+  followedBy: string[];
+  inputs: string[];
+  outputs: string[];
+  command?: string;
+  blockerReason?: string;
+}
+
+/**
+ * Directed dependency edge between two nodes in the Pipeline DAG.
+ */
+export interface BmadDagEdge {
+  source: string;
+  target: string;
+  type: 'sequence' | 'dependency';
+}
+
+/**
+ * Grouped phase column containing nodes for the Pipeline DAG.
+ */
+export interface BmadDagPhaseGroup {
+  id: string;
+  label: string;
+  order: number;
+  nodes: BmadDagNode[];
+}
+
+/**
+ * Full Pipeline DAG graph structure.
+ */
+export interface BmadPipelineDag {
+  phases: BmadDagPhaseGroup[];
+  nodes: BmadDagNode[];
+  edges: BmadDagEdge[];
+}
+
+/**
  * State exposed to Webview Dashboard via JSON-RPC.
  */
 export interface BmadDashboardState {
@@ -442,6 +494,7 @@ export interface BmadDashboardState {
   skills?: BmadSkillNode[];
   agents?: BmadAgentNode[];
   sprintStatus?: BmadSprintStatusData;
+  dag?: BmadPipelineDag;
   timestamp: string;
 }
 

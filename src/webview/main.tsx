@@ -2,6 +2,7 @@ import { render, h } from 'preact';
 import { useState, useEffect } from 'preact/hooks';
 import { rpcClient } from './rpc-client';
 import { BmadDashboardState } from '../core/types';
+import { PipelineDag } from './components/PipelineDag';
 
 export function App() {
   const [state, setState] = useState<BmadDashboardState | null>(null);
@@ -253,105 +254,11 @@ export function App() {
             </p>
           </div>
         ) : activeTab === 'pipeline' ? (
-          /* Pipeline DAG Tab */
-          <div>
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '16px'
-              }}
-            >
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px' }}>BMAD Method Pipeline Workflow</h3>
-                <span style={{ fontSize: '12px', color: 'var(--vscode-descriptionForeground)' }}>
-                  Interactive node graph and stage dependencies ({state.skills?.length || 0} skills configured)
-                </span>
-              </div>
-            </div>
-
-            {state.skills && state.skills.length > 0 ? (
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                  gap: '12px'
-                }}
-              >
-                {state.skills.map((skill) => (
-                  <div
-                    key={skill.id}
-                    style={{
-                      border: '1px solid var(--vscode-panel-border, #333)',
-                      borderRadius: '4px',
-                      padding: '12px',
-                      backgroundColor: 'var(--vscode-sideBar-background, #252526)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between'
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '6px'
-                        }}
-                      >
-                        <span style={{ fontWeight: 600, fontSize: '13px' }}>{skill.name}</span>
-                        <span
-                          style={{
-                            fontSize: '10px',
-                            textTransform: 'uppercase',
-                            padding: '1px 5px',
-                            borderRadius: '3px',
-                            border: `1px solid ${getStatusBadgeColor(skill.artifactStatus || 'pending')}`,
-                            color: getStatusBadgeColor(skill.artifactStatus || 'pending')
-                          }}
-                        >
-                          {skill.artifactStatus || 'pending'}
-                        </span>
-                      </div>
-                      <p
-                        style={{
-                          margin: '4px 0 12px 0',
-                          fontSize: '11px',
-                          color: 'var(--vscode-descriptionForeground)',
-                          lineHeight: '1.4'
-                        }}
-                      >
-                        {skill.description}
-                      </p>
-                    </div>
-
-                    <button
-                      onClick={() => handleExecuteSkill(skill.id, skill.command)}
-                      disabled={executingSkill === skill.id}
-                      style={{
-                        alignSelf: 'flex-start',
-                        padding: '4px 10px',
-                        backgroundColor: 'var(--vscode-button-background, #0E639C)',
-                        color: 'var(--vscode-button-foreground, #fff)',
-                        border: 'none',
-                        borderRadius: '2px',
-                        cursor: 'pointer',
-                        fontSize: '11px'
-                      }}
-                    >
-                      {executingSkill === skill.id ? 'Executing...' : 'Run Skill'}
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p style={{ color: 'var(--vscode-descriptionForeground)', fontSize: '12px' }}>
-                No skills detected in lifecycle configuration.
-              </p>
-            )}
-          </div>
+          <PipelineDag
+            dag={state.dag}
+            onExecuteSkill={handleExecuteSkill}
+            executingSkill={executingSkill}
+          />
         ) : (
           /* Sprint Kanban Board Tab */
           <div>

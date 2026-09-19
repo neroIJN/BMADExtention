@@ -14,6 +14,7 @@ import { detectBmadWorkspace } from '../core/workspace-detector';
 import { resolveBmadConfig } from '../core/config-resolver';
 import { parseLifecycleHelp } from '../core/lifecycle-parser';
 import { loadAgentsFromWorkspace } from '../core/agent-parser';
+import { buildPipelineDag } from '../core/dag-builder';
 import { ExecutionDispatcher } from './execution-dispatcher';
 
 /**
@@ -227,6 +228,8 @@ export class BMADDashboardPanel {
       }
     }
 
+    const dag = buildPipelineDag(skills);
+
     return {
       workspaceRoot: this._workspaceRoot,
       isBmad: detection.isBmad,
@@ -236,6 +239,7 @@ export class BMADDashboardPanel {
       skills,
       agents,
       sprintStatus,
+      dag,
       timestamp: new Date().toISOString()
     };
   }
