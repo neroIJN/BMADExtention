@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-18-2026 21:20
-last_updated: 09-19-2026 14:06
+last_updated: 09-19-2026 14:31
 project: BMADExtention
 project_key: NOKEY
 tracking_system: file-system
@@ -58,6 +58,6 @@ development_status:
   epic-4: in-progress
   4-1-webview-dashboard-infrastructure-json-rpc-bridge: done
   4-2-interactive-pipeline-dag-visualizer: done
-  4-3-interactive-sprint-kanban-board: backlog
+  4-3-interactive-sprint-kanban-board: done
   4-4-debounced-real-time-live-synchronization: backlog
   epic-4-retrospective: optional

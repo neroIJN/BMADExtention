@@ -483,6 +483,40 @@ export interface BmadPipelineDag {
 }
 
 /**
+ * Individual story card on the Kanban sprint board.
+ */
+export interface BmadKanbanCard {
+  key: string;
+  title: string;
+  epicNum?: number;
+  status: string;
+  specFileName?: string;
+  hasFile?: boolean;
+}
+
+/**
+ * Kanban board column containing cards.
+ */
+export interface BmadKanbanColumn {
+  id: 'backlog' | 'ready-for-dev' | 'in-progress' | 'review' | 'done';
+  label: string;
+  cards: BmadKanbanCard[];
+}
+
+/**
+ * Full Kanban board structure projected from sprint-status.yaml.
+ */
+export interface BmadKanbanBoard {
+  project?: string;
+  lastUpdated?: string;
+  columns: BmadKanbanColumn[];
+  actionItems: BmadSprintActionItem[];
+  totalStories: number;
+  completedStories: number;
+  completionPercentage: number;
+}
+
+/**
  * State exposed to Webview Dashboard via JSON-RPC.
  */
 export interface BmadDashboardState {
@@ -495,6 +529,7 @@ export interface BmadDashboardState {
   agents?: BmadAgentNode[];
   sprintStatus?: BmadSprintStatusData;
   dag?: BmadPipelineDag;
+  kanban?: BmadKanbanBoard;
   timestamp: string;
 }
 
