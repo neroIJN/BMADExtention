@@ -11,6 +11,7 @@ import { MemlogInspectorPanel } from './adapters/memlog-inspector-panel';
 import { RubricValidatorPanel } from './adapters/rubric-validator-panel';
 import { TeaDashboardPanel } from './adapters/tea-dashboard-panel';
 import { BMADDashboardPanel } from './adapters/webview-dashboard-panel';
+import { LiveSyncWatcher } from './adapters/live-sync-watcher';
 import { ExecutionDispatcher } from './adapters/execution-dispatcher';
 import { CommandPaletteManager } from './adapters/command-palette-manager';
 import {
@@ -23,6 +24,7 @@ import {
 
 let outputChannel: vscode.OutputChannel | undefined;
 let activeConfig: ConfigResolverResult | undefined;
+let liveSyncWatcher: LiveSyncWatcher | undefined;
 let lifecycleProvider: LifecycleTreeProvider | undefined;
 let agentsProvider: AgentsTreeProvider | undefined;
 let artifactsProvider: ArtifactsTreeProvider | undefined;
@@ -101,6 +103,55 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   } else {
     outputChannel.appendLine('[BMAD] No active BMAD installation detected in current workspace.');
     statusBarManager.hide();
+  }
+
+  // 4b. Live Synchronization & File Watcher Setup (Story 4.4)
+  const refreshBmadState = async () => {
+    if (!rootPath) {
+      return;
+    }
+    try {
+      const refreshedDetection = await detectBmadWorkspace(rootPath);
+      detectionResult = refreshedDetection;
+      await vscode.commands.executeCommand('setContext', 'bmad:hasBmadProject', detectionResult.isBmad);
+
+      if (detectionResult.isBmad) {
+        activeConfig = await resolveBmadConfig(rootPath);
+        if (lifecycleProvider) {
+          await lifecycleProvider.load(rootPath, activeConfig.paths);
+          statusBarManager?.update(lifecycleProvider.getPhases());
+        }
+        if (agentsProvider) {
+          await agentsProvider.load(rootPath);
+        }
+        if (artifactsProvider) {
+          await artifactsProvider.load(rootPath, activeConfig.paths);
+        }
+        BMADDashboardPanel.currentPanel?.notifyStateUpdated();
+      } else {
+        statusBarManager?.hide();
+      }
+    } catch (err: any) {
+      outputChannel?.appendLine(`[BMAD Error] Failed during live sync refresh: ${err?.message || String(err)}`);
+    }
+  };
+
+  if (rootPath) {
+    const debounceMs = vscode.workspace
+      .getConfiguration('bmad')
+      .get<number>('refreshDebounceMs', 300);
+
+    liveSyncWatcher = new LiveSyncWatcher({
+      workspaceRoot: rootPath,
+      debounceMs,
+      onSync: async (changedPaths) => {
+        outputChannel?.appendLine(
+          `[BMAD LiveSync] Refreshing workspace state (${changedPaths.length} file changes debounced)`
+        );
+        await refreshBmadState();
+      }
+    });
+    context.subscriptions.push(liveSyncWatcher);
   }
 
   // 5. Register Commands
