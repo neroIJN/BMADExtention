@@ -1,10 +1,6 @@
 # BMAD Visualizer & Helper for VS Code
 
-[![Visual Studio Code](https://img.shields.io/badge/VS%20Code-Extension-007ACC?logo=visualstudiocode&logoColor=white)](https://code.visualstudio.com/)
-[![BMAD Method](https://img.shields.io/badge/BMAD%20Method-v6.12.0-blueviolet)](https://docs.bmad-method.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![Preact](https://img.shields.io/badge/Preact-10.20-673AB8?logo=preact&logoColor=white)](https://preactjs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/neroIJN/BMADExtention/blob/main/LICENSE)
+**VS Code Extension** | **BMAD Method v6.12.0** | **TypeScript 5.4** | **Preact** | **MIT License**
 
 An interactive native Visual Studio Code extension that acts as a visualizer, cockpit, and execution helper for the **BMad Method (BMAD)** multi-agent development framework.
 
@@ -58,7 +54,7 @@ The **BMAD Visualizer & Helper** brings that workflow out of raw terminal logs a
   - 🎨 **Sally** (UX Designer)
   - 📊 **Mary** (Business Analyst)
   - 🧠 **CIS Specialists** (Carson, Maya, Dr. Quinn, Victor, Caravaggio, Sophia)
-- **Execution Dispatch:** 1-click action to launch an integrated terminal (`"BMAD Agent"`) or copy formatted prompt directives directly to your clipboard for Copilot Chat, Claude Code, or Antigravity.
+- **Execution Helper:** One-click action to open a dedicated integrated terminal session or copy prompt directives for your assistant of choice.
 
 ### 3. 📊 Interactive Webview Dashboard (The Cockpit)
 - **Pipeline DAG Visualizer:** Interactive node graph rendering the BMAD workflow pipeline with live status coloring (Pending, In Progress, Completed, Blocked) and dependency edges.

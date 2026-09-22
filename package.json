@@ -18,17 +18,15 @@
   },
   "license": "MIT",
   "categories": [
-    "Other",
-    "Programming Languages",
-    "Visualization"
+    "Visualization",
+    "Other"
   ],
   "keywords": [
     "bmad",
-    "ai",
-    "agents",
     "visualizer",
     "workflow",
-    "kanban"
+    "kanban",
+    "dashboard"
   ],
   "activationEvents": [
     "onView:bmad.views.lifecycle",
