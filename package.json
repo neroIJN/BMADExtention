@@ -8,6 +8,11 @@
     "type": "git",
     "url": "https://github.com/neroIJN/BMADExtention.git"
   },
+  "homepage": "https://github.com/neroIJN/BMADExtention",
+  "bugs": {
+    "url": "https://github.com/neroIJN/BMADExtention/issues"
+  },
+  "icon": "media/icons/bmad-icon.png",
   "engines": {
     "vscode": "^1.85.0"
   },
@@ -30,8 +35,7 @@
     "onView:bmad.views.agents",
     "onView:bmad.views.sprint",
     "onView:bmad.views.artifacts",
-    "onView:bmad.views.welcome",
-    "onStartupFinished"
+    "onView:bmad.views.welcome"
   ],
   "main": "./dist/extension.js",
   "contributes": {

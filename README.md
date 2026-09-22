@@ -4,7 +4,7 @@
 [![BMAD Method](https://img.shields.io/badge/BMAD%20Method-v6.12.0-blueviolet)](https://docs.bmad-method.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.4-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Preact](https://img.shields.io/badge/Preact-10.20-673AB8?logo=preact&logoColor=white)](https://preactjs.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/neroIJN/BMADExtention/blob/main/LICENSE)
 
 An interactive native Visual Studio Code extension that acts as a visualizer, cockpit, and execution helper for the **BMad Method (BMAD)** multi-agent development framework.
 
