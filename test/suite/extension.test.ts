@@ -5,8 +5,8 @@ suite('BMAD Extension Host Integration Test Suite', () => {
   vscode.window.showInformationMessage('Running BMAD Extension Host Integration Tests...');
 
   test('Extension should be present and activated in host', async () => {
-    const ext = vscode.extensions.getExtension('neroIJN.bmad-vscode-extension');
-    assert.ok(ext, 'Extension neroIJN.bmad-vscode-extension should be found in host registry');
+    const ext = vscode.extensions.getExtension('neroIJN.bmad-visualizer');
+    assert.ok(ext, 'Extension neroIJN.bmad-visualizer should be found in host registry');
 
     if (!ext.isActive) {
       await ext.activate();

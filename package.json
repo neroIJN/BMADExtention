@@ -1,7 +1,7 @@
 {
-  "name": "bmad-vscode-extension",
-  "displayName": "BMAD Method Visualizer & Helper",
-  "description": "Visualizer, Cockpit, and Interactive Assistant for the BMad Method (BMAD) multi-agent development framework",
+  "name": "bmad-visualizer",
+  "displayName": "BMAD Visualizer",
+  "description": "Visualizer, cockpit, and interactive assistant for the BMad Method",
   "version": "0.1.0",
   "publisher": "neroIJN",
   "repository": {
