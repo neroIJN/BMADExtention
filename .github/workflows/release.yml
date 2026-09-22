@@ -34,6 +34,9 @@ jobs:
       - name: Run Unit Tests
         run: npm test
 
+      - name: Build Extension
+        run: npm run build
+
       - name: Audit Extension Package Manifest
         run: npm run package:check
 

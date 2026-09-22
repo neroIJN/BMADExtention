@@ -20,6 +20,12 @@ if (!pkg.engines?.vscode) {
   process.exit(1);
 }
 
+// Ensure dist exists before auditing package contents
+if (!fs.existsSync('dist/extension.js') || !fs.existsSync('dist/webview/bundle.js')) {
+  console.log('[Check Package] Compiling extension before auditing...');
+  execSync('npm run build', { stdio: 'inherit' });
+}
+
 // 2. Verify files produced by vsce ls
 console.log('[Check Package] Auditing vsce ls file inclusions...');
 let fileListOutput;
