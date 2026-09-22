@@ -11,6 +11,7 @@
   "engines": {
     "vscode": "^1.85.0"
   },
+  "license": "MIT",
   "categories": [
     "Other",
     "Programming Languages",
@@ -25,6 +26,11 @@
     "kanban"
   ],
   "activationEvents": [
+    "onView:bmad.views.lifecycle",
+    "onView:bmad.views.agents",
+    "onView:bmad.views.sprint",
+    "onView:bmad.views.artifacts",
+    "onView:bmad.views.welcome",
     "onStartupFinished"
   ],
   "main": "./dist/extension.js",
@@ -164,10 +170,33 @@
         "title": "Open TEA Quality & Traceability Dashboard",
         "category": "BMAD",
         "icon": "$(beaker)"
+      },
+      {
+        "command": "bmad.switchWorkspaceProject",
+        "title": "Switch Active BMAD Project...",
+        "category": "BMAD",
+        "icon": "$(folder-active)"
+      },
+      {
+        "command": "bmad.refreshSprint",
+        "title": "Refresh Sprint & Stories",
+        "category": "BMAD",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "bmad.openFolder",
+        "title": "Open BMAD Project Folder...",
+        "category": "BMAD",
+        "icon": "$(folder-opened)"
       }
     ],
     "menus": {
       "view/title": [
+        {
+          "command": "bmad.switchWorkspaceProject",
+          "when": "view == bmad.views.lifecycle",
+          "group": "navigation@0"
+        },
         {
           "command": "bmad.showRecommendations",
           "when": "view == bmad.views.lifecycle",
@@ -181,6 +210,11 @@
         {
           "command": "bmad.refreshAgents",
           "when": "view == bmad.views.agents",
+          "group": "navigation"
+        },
+        {
+          "command": "bmad.refreshSprint",
+          "when": "view == bmad.views.sprint",
           "group": "navigation"
         },
         {
@@ -240,7 +274,13 @@
           "description": "Debounce interval in milliseconds for file system watcher."
         }
       }
-    }
+    },
+    "viewsWelcome": [
+      {
+        "view": "bmad.views.welcome",
+        "contents": "No BMAD Method project detected in the active workspace.\n\nOpen a project folder containing a `_bmad/` configuration directory to explore lifecycles, personas, artifacts, and sprint Kanban.\n\n[Open Project Folder](command:bmad.openFolder)\n[Switch Workspace Project](command:bmad.switchWorkspaceProject)\n[Check BMAD Status](command:bmad.statusCheck)"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
@@ -250,6 +290,12 @@
     "watch:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch",
     "watch:webview": "vite build --watch",
     "build": "npm run compile",
+    "package": "vsce package --no-dependencies",
+    "package:dry-run": "vsce ls",
+    "package:check": "node scripts/check-package.mjs",
+    "compile:tests": "tsc -p tsconfig.test.json",
+    "pretest:extension-host": "npm run compile && npm run compile:tests",
+    "test:extension-host": "node ./dist-test/runTest.js",
     "test": "vitest run"
   },
   "dependencies": {
@@ -259,10 +305,16 @@
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.8.2",
+    "@types/glob": "^9.0.0",
     "@types/js-yaml": "^4.0.9",
+    "@types/mocha": "^10.0.10",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.20.2",
+    "glob": "^13.0.6",
+    "mocha": "^12.0.2",
     "preact": "^10.20.1",
     "typescript": "^5.4.0",
     "vite": "^5.2.0",

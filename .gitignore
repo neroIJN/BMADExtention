@@ -5,6 +5,7 @@ node_modules/
 
 # Build Outputs
 dist/
+dist-test/
 out/
 *.vsix
 
@@ -18,8 +19,9 @@ yarn-error.log*
 # OS & Editor
 .DS_Store
 Thumbs.db
-.vscode-test/
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
 
 # Environment
 .env

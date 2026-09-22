@@ -132,7 +132,7 @@ export class BMADDashboardPanel {
         throw new Error('Execution dispatcher not available');
       }
       const target = payload.command || payload.skillId;
-      await this._executionDispatcher.dispatch(target);
+      await this._executionDispatcher.dispatchSkill(target);
       return { success: true, target };
     });
 
@@ -194,7 +194,7 @@ export class BMADDashboardPanel {
         const helpCsvPath = path.join(this._workspaceRoot, '_bmad', '_config', 'bmad-help.csv');
         if (fs.existsSync(helpCsvPath)) {
           const content = fs.readFileSync(helpCsvPath, 'utf8');
-          const phases = parseLifecycleHelp(content, this._workspaceRoot, configResult.paths);
+          const phases = parseLifecycleHelp(content, configResult.paths, this._workspaceRoot);
           skills = phases.flatMap((p) => p.skills);
         }
       } catch (err) {
@@ -202,7 +202,8 @@ export class BMADDashboardPanel {
       }
 
       try {
-        agents = await loadAgentsFromWorkspace(this._workspaceRoot);
+        const teams = await loadAgentsFromWorkspace(this._workspaceRoot);
+        agents = teams.flatMap((t) => t.agents);
       } catch (err) {
         console.warn('[BMADDashboardPanel] Failed to load agents:', err);
       }

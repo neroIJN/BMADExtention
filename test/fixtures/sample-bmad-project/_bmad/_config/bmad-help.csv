@@ -1,0 +1,5 @@
+module,phase,menu_code,skill,name,description
+bmm,2-plan,PRD,bmad-prd,Product Requirements Document,Define PRD requirements
+bmm,2-plan,ARC,bmad-architecture,Architecture,System Architecture
+bmm,4-implementation,BLD,bmad-build,Build Implementation,Implement code
+tea,2-plan,ATDD,bmad-testarch-atdd,ATDD Scaffolder,Generate test scaffolds

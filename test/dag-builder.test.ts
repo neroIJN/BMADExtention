@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildPipelineDag } from '../src/core/dag-builder';
+import { buildPipelineDag, hasDependencyCycle, validateDependencyEdge } from '../src/core/dag-builder';
 import { BmadSkillNode } from '../src/core/types';
 
 describe('Pipeline DagBuilder', () => {
@@ -146,4 +146,47 @@ describe('Pipeline DagBuilder', () => {
     expect(edgeToArch).toBeDefined();
     expect(edgeToArch?.type).toBe('dependency');
   });
+
+  it('should detect cycles in directed dependency edges', () => {
+    const acyclicEdges = [
+      { from: 'A', to: 'B' },
+      { from: 'B', to: 'C' },
+      { from: 'A', to: 'C' }
+    ];
+    expect(hasDependencyCycle(acyclicEdges)).toBe(false);
+
+    const cyclicEdges = [
+      { from: 'A', to: 'B' },
+      { from: 'B', to: 'C' },
+      { from: 'C', to: 'A' }
+    ];
+    expect(hasDependencyCycle(cyclicEdges)).toBe(true);
+  });
+
+  it('should validate adding new dependency edge and prevent loops or self-dependencies', () => {
+    const existing = [
+      { from: 'bmad-prd', to: 'bmad-architecture' },
+      { from: 'bmad-architecture', to: 'bmad-spec' }
+    ];
+
+    // Self dependency
+    const selfRes = validateDependencyEdge(existing, { from: 'bmad-prd', to: 'bmad-prd' });
+    expect(selfRes.valid).toBe(false);
+    expect(selfRes.reason).toContain('Self-referencing');
+
+    // Duplicate
+    const dupRes = validateDependencyEdge(existing, { from: 'bmad-prd', to: 'bmad-architecture' });
+    expect(dupRes.valid).toBe(false);
+    expect(dupRes.reason).toContain('already exists');
+
+    // Cycle introduction: spec -> prd creates prd -> arch -> spec -> prd
+    const cycleRes = validateDependencyEdge(existing, { from: 'bmad-spec', to: 'bmad-prd' });
+    expect(cycleRes.valid).toBe(false);
+    expect(cycleRes.reason).toContain('cyclic deadlock');
+
+    // Valid forward edge
+    const validRes = validateDependencyEdge(existing, { from: 'bmad-product-brief', to: 'bmad-prd' });
+    expect(validRes.valid).toBe(true);
+  });
 });
+

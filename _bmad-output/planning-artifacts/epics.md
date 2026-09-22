@@ -36,6 +36,10 @@ This document provides the complete epic and story breakdown for BMADExtention (
 - **FR-14:** Traceability Matrix & Quality Gate Dashboard — TEA quality dashboard displaying 0-100 quality scores, ATDD checklist status, and requirements-to-test traceability.
 - **FR-15:** Persistent Status Bar Indicator — VS Code status bar item showing current BMAD phase, active story, and next recommended action.
 - **FR-16:** Comprehensive Command Palette Registry — Contributes commands (`BMAD: Open Dashboard`, `BMAD: Run Skill...`, `BMAD: Talk to Agent...`) with QuickPick menus.
+- **FR-17:** Multi-Root Workspace Support & Dynamic Context Resolution — Detects BMAD configurations across multiple roots in a multi-folder VS Code workspace, provides quick root switching, and dynamically binds providers and Webviews to the selected project context.
+- **FR-18:** Interactive Drag-and-Drop Pipeline Canvas & Visual Authoring — Extends the Webview pipeline into an interactive drag-and-drop authoring canvas allowing visual repositioning of skill nodes, edge dependency wiring, and persisting custom workflow topologies.
+- **FR-19:** Production Extension Packaging & VSIX Distribution Pipeline — Implements a production-grade packaging workflow with `@vscode/vsce`, `.vscodeignore` exclusion rules, manifest metadata auditing, bundle minification, and artifact validation (< 5MB target).
+- **FR-20:** Automated Integration Testing in Extension Development Host — Implements an automated end-to-end integration test runner via `@vscode/test-electron` executing inside a genuine VS Code Extension Development Host to verify activation, tree providers, commands, and Webview RPC communication.
 
 ### NonFunctional Requirements
 
@@ -81,6 +85,10 @@ This document provides the complete epic and story breakdown for BMADExtention (
 - **FR-14:** Epic 3 - Traceability Matrix & Quality Gate Dashboard (TEA)
 - **FR-15:** Epic 1 - Persistent Status Bar Indicator
 - **FR-16:** Epic 2 - Comprehensive Command Palette Registry
+- **FR-17:** Epic 5 - Multi-Root Workspace Support & Dynamic Context Resolution
+- **FR-18:** Epic 5 - Interactive Drag-and-Drop Pipeline Canvas & Visual Authoring
+- **FR-19:** Epic 5 - Production Extension Packaging & VSIX Distribution Pipeline
+- **FR-20:** Epic 5 - Automated Integration Testing in Extension Development Host
 
 ## Epic List
 
@@ -99,6 +107,10 @@ This document provides the complete epic and story breakdown for BMADExtention (
 ### Epic 4: Visual Cockpit & Sprint Kanban Management
 **Goal:** Deliver an interactive Webview dashboard featuring a visual BMAD Pipeline DAG and a live, drag-and-drop Kanban sprint board backed by `sprint-status.yaml` with sub-300ms reactive file watcher synchronization.
 **FRs covered:** FR-8, FR-9, FR-10 (Addresses AR-4, AR-6, UX-DR3, UX-DR4, UX-DR5, UX-DR6, NFR-2, NFR-3)
+
+### Epic 5: Advanced v2 Platform Enhancements, Packaging & Host Verification
+**Goal:** Elevate BMADExtention into a scalable v2 platform supporting multi-root workspaces, interactive drag-and-drop workflow canvas authoring, production-grade VSIX packaging, and automated end-to-end integration testing in the live VS Code Extension Development Host.
+**FRs covered:** FR-17, FR-18, FR-19, FR-20 (Addresses AR-1, AR-2, AR-4, NFR-1, NFR-4, NFR-5)
 
 ---
 
@@ -323,3 +335,69 @@ So that my dashboard and tree views always reflect the latest state without manu
 **When** the file write finishes,
 **Then** the trailing 300ms debounced file watcher triggers a state recomputation and pushes update events to all active views.
 **And** the Kanban board and tree views update seamlessly in < 300ms without flickering, page reloads, or losing scroll position.
+
+---
+
+## Epic 5: Advanced v2 Platform Enhancements, Packaging & Host Verification
+
+Elevate BMADExtention into a scalable v2 platform supporting multi-root workspaces, interactive drag-and-drop workflow canvas authoring, production-grade VSIX packaging, and automated end-to-end integration testing in the live VS Code Extension Development Host.
+
+### Story 5.1: Multi-Root Workspace Support & Dynamic Context Resolution
+
+As a developer working in a monorepo or multi-project workspace,
+I want BMADExtention to detect all BMAD projects across workspace roots and allow switching between them,
+So that I can monitor and orchestrate distinct BMAD lifecycles without opening separate VS Code windows.
+
+**Acceptance Criteria:**
+
+**Given** a VS Code multi-root workspace containing multiple open folders where one or more folders contain a valid `_bmad/` structure,
+**When** the workspace is loaded or workspace folders are added or removed,
+**Then** `WorkspaceDetector` identifies all BMAD-enabled root folders and exposes a project picker in the Status Bar and Lifecycle View title.
+**And** selecting a workspace root dynamically rebinds `ConfigResolver`, `LifecycleTreeProvider`, `AgentsTreeProvider`, `ArtifactsTreeProvider`, and Webview state to that folder.
+**And** if no open folders contain `_bmad/`, the views fall back gracefully to the welcome view without throwing unhandled exceptions.
+
+### Story 5.2: Interactive Drag-and-Drop Pipeline Canvas & Visual Authoring
+
+As a lead architect or workflow author,
+I want an interactive drag-and-drop visual canvas for the BMAD pipeline DAG,
+So that I can rearrange skill execution sequences, visually connect dependency links, and author custom workflow pipelines.
+
+**Acceptance Criteria:**
+
+**Given** the visualizer dashboard is open to the Pipeline Canvas tab,
+**When** the user drags a skill node on the canvas,
+**Then** the node moves fluidly with visual snap-to-grid alignment and dynamic SVG connection edge rerouting.
+**And** users can drag connection handles between skill nodes to add or remove `preceded-by` and `followed-by` dependency links.
+**And** clicking "Save Workflow" or exporting topology writes the updated workflow definitions back to `_bmad/` configuration via the JSON-RPC bridge with confirmation prompts.
+
+### Story 5.3: Production Extension Packaging & VSIX Distribution Pipeline
+
+As an extension maintainer or contributor,
+I want an automated, standardized packaging pipeline using `@vscode/vsce` and strict `.vscodeignore` rules,
+So that the extension can be packaged into a secure, minimal, production-ready `.vsix` bundle ready for the Marketplace or local installation.
+
+**Acceptance Criteria:**
+
+**Given** the extension repository with all dependencies and build scripts,
+**When** running `npm run package` (or `npx vsce package`),
+**Then** the build pipeline triggers `vscode:prepublish` (compiling extension bundle with esbuild and webview bundle with Vite) and packages a valid `.vsix` file.
+**And** a comprehensive `.vscodeignore` excludes all development sources (`src/`, `test/`), planning and test artifacts (`_bmad-output/`, `_bmad/`), unit test configurations, and dev dependencies, yielding a package size under 5MB.
+**And** `package.json` validates with all required Marketplace fields: publisher, repository, engine compatibility (`^1.85.0`), license, categories, and icon metadata without warnings or errors.
+
+### Story 5.4: Automated Integration Testing in Extension Development Host
+
+As a software engineer maintaining BMADExtention,
+I want automated end-to-end integration tests that run inside the real VS Code Extension Development Host,
+So that we verify real VS Code API behavior, command execution, tree views, and Webview lifecycle under genuine runtime conditions.
+
+**Acceptance Criteria:**
+
+**Given** the test infrastructure configured with `@vscode/test-electron`,
+**When** running `npm run test:e2e` (or `npm run test:extension-host`),
+**Then** the runner downloads a compatible VS Code test instance, launches the Extension Development Host in a sandbox workspace fixture, and executes integration test suites.
+**And** integration tests verify that:
+  1. The extension successfully activates and context key `bmad:hasBmadProject` evaluates to `true`.
+  2. Tree views (`bmad.views.lifecycle`, `bmad.views.agents`, `bmad.views.artifacts`) register properly and return real items for an active BMAD workspace.
+  3. Commands (`bmad.openDashboard`, `bmad.runSkill`, `bmad.talkToAgent`, `bmad.showRecommendations`) execute without throwing errors.
+  4. Webview panels instantiate, set appropriate CSP headers with nonces, and maintain functional communication channels.
+**And** launch and debug configurations (`.vscode/launch.json` and `.vscode/tasks.json`) are provided for interactive debugging in the Extension Host.

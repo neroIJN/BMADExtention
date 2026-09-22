@@ -10,6 +10,10 @@ interface PipelineDagProps {
 
 export function PipelineDag({ dag, onExecuteSkill, executingSkill }: PipelineDagProps) {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
+  const [draggedNodeId, setDraggedNodeId] = useState<string | null>(null);
+  const [dragOverPhaseId, setDragOverPhaseId] = useState<string | null>(null);
+  const [customNodeOrder, setCustomNodeOrder] = useState<Record<string, string[]>>({});
+  const [authoringStatus, setAuthoringStatus] = useState<string | null>(null);
 
   if (!dag || !dag.phases || dag.phases.length === 0) {
     return (
@@ -21,6 +25,78 @@ export function PipelineDag({ dag, onExecuteSkill, executingSkill }: PipelineDag
   }
 
   const selectedNode = dag.nodes.find((n) => n.id === selectedNodeId);
+
+  // Helper to get nodes for a phase respecting drag-reordered state
+  const getPhaseNodes = (phaseId: string, defaultNodes: BmadDagNode[]) => {
+    const customOrder = customNodeOrder[phaseId];
+    if (!customOrder) {
+      return defaultNodes;
+    }
+    const nodeMap = new Map(dag.nodes.map((n) => [n.id, n]));
+    const ordered: BmadDagNode[] = [];
+    for (const id of customOrder) {
+      const n = nodeMap.get(id);
+      if (n) ordered.push(n);
+    }
+    // append any missing
+    for (const n of defaultNodes) {
+      if (!ordered.some((o) => o.id === n.id)) {
+        ordered.push(n);
+      }
+    }
+    return ordered;
+  };
+
+  const handleDragStart = (e: DragEvent, nodeId: string, phaseId: string) => {
+    setDraggedNodeId(nodeId);
+    if (e.dataTransfer) {
+      e.dataTransfer.setData('text/plain', JSON.stringify({ nodeId, phaseId }));
+      e.dataTransfer.effectAllowed = 'move';
+    }
+  };
+
+  const handleDragOver = (e: DragEvent, phaseId: string) => {
+    e.preventDefault();
+    if (dragOverPhaseId !== phaseId) {
+      setDragOverPhaseId(phaseId);
+    }
+    if (e.dataTransfer) {
+      e.dataTransfer.dropEffect = 'move';
+    }
+  };
+
+  const handleDrop = (e: DragEvent, targetPhaseId: string, targetNodeId?: string) => {
+    e.preventDefault();
+    setDragOverPhaseId(null);
+    if (!draggedNodeId) return;
+
+    const sourcePhase = dag.phases.find((p) => p.nodes.some((n) => n.id === draggedNodeId));
+    if (!sourcePhase) return;
+
+    const currentTargetNodes = getPhaseNodes(
+      targetPhaseId,
+      dag.phases.find((p) => p.id === targetPhaseId)?.nodes || []
+    ).map((n) => n.id);
+
+    // Remove from existing if same phase or reordering
+    const filtered = currentTargetNodes.filter((id) => id !== draggedNodeId);
+    const insertIdx = targetNodeId ? filtered.indexOf(targetNodeId) : filtered.length;
+    filtered.splice(insertIdx >= 0 ? insertIdx : filtered.length, 0, draggedNodeId);
+
+    setCustomNodeOrder((prev) => ({
+      ...prev,
+      [targetPhaseId]: filtered
+    }));
+    setAuthoringStatus(`Moved ${draggedNodeId} in ${targetPhaseId}`);
+    setDraggedNodeId(null);
+  };
+
+  const resetLayout = () => {
+    setCustomNodeOrder({});
+    setAuthoringStatus('Layout reset to canonical order');
+    setTimeout(() => setAuthoringStatus(null), 3000);
+  };
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -49,99 +125,165 @@ export function PipelineDag({ dag, onExecuteSkill, executingSkill }: PipelineDag
   };
 
   return (
-    <div style={{ display: 'flex', height: '100%', position: 'relative', overflow: 'hidden' }}>
-      {/* DAG Flow Stage Columns */}
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', position: 'relative', overflow: 'hidden' }}>
+      {/* Visual Canvas Toolbar (Story 5.2) */}
       <div
         style={{
-          flex: 1,
-          overflowX: 'auto',
-          overflowY: 'auto',
           display: 'flex',
-          gap: '20px',
-          padding: '16px',
-          alignItems: 'flex-start'
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 16px',
+          backgroundColor: 'var(--vscode-editorGroupHeader-tabsBackground, #252526)',
+          borderBottom: '1px solid var(--vscode-panel-border, #333)',
+          fontSize: '12px'
         }}
       >
-        {dag.phases.map((phaseGroup, idx) => (
-          <div
-            key={phaseGroup.id}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#4EC9B0', fontWeight: 600 }}>
+            <span>✣</span> Interactive Drag & Drop Canvas
+          </span>
+          <span style={{ color: 'var(--vscode-descriptionForeground)' }}>
+            Drag skill cards to adjust execution pipelines
+          </span>
+          {authoringStatus && (
+            <span style={{ color: '#569CD6', fontStyle: 'italic' }}>({authoringStatus})</span>
+          )}
+        </div>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            onClick={resetLayout}
             style={{
-              minWidth: '260px',
-              maxWidth: '300px',
-              flex: '0 0 280px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '12px'
+              padding: '4px 10px',
+              backgroundColor: 'transparent',
+              color: 'var(--vscode-button-secondaryForeground, #ccc)',
+              border: '1px solid var(--vscode-panel-border, #444)',
+              borderRadius: '3px',
+              cursor: 'pointer',
+              fontSize: '11px'
             }}
           >
-            {/* Phase Header */}
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 12px',
-                backgroundColor: 'var(--vscode-editorGroupHeader-tabsBackground, #252526)',
-                border: '1px solid var(--vscode-panel-border, #333)',
-                borderRadius: '4px',
-                position: 'sticky',
-                top: 0,
-                zIndex: 2
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span
-                  style={{
-                    width: '18px',
-                    height: '18px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--vscode-badge-background, #3a3d41)',
-                    color: 'var(--vscode-badge-foreground, #fff)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '10px',
-                    fontWeight: 600
-                  }}
-                >
-                  {phaseGroup.order}
-                </span>
-                <span style={{ fontWeight: 600, fontSize: '12px' }}>{phaseGroup.label}</span>
-              </div>
-              <span
+            Reset Layout
+          </button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
+        {/* DAG Flow Stage Columns */}
+        <div
+          style={{
+            flex: 1,
+            overflowX: 'auto',
+            overflowY: 'auto',
+            display: 'flex',
+            gap: '20px',
+            padding: '16px',
+            alignItems: 'flex-start'
+          }}
+        >
+          {dag.phases.map((phaseGroup) => {
+            const phaseNodes = getPhaseNodes(phaseGroup.id, phaseGroup.nodes);
+            const isOverThisPhase = dragOverPhaseId === phaseGroup.id;
+
+            return (
+              <div
+                key={phaseGroup.id}
+                onDragOver={(e) => handleDragOver(e as any, phaseGroup.id)}
+                onDrop={(e) => handleDrop(e as any, phaseGroup.id)}
                 style={{
-                  fontSize: '11px',
-                  color: 'var(--vscode-descriptionForeground)'
+                  minWidth: '260px',
+                  maxWidth: '300px',
+                  flex: '0 0 280px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  border: isOverThisPhase ? '1px dashed #569CD6' : '1px solid transparent',
+                  borderRadius: '6px',
+                  padding: '4px',
+                  backgroundColor: isOverThisPhase ? 'rgba(86, 156, 214, 0.08)' : 'transparent',
+                  transition: 'all 0.15s ease'
                 }}
               >
-                {phaseGroup.nodes.length}
-              </span>
-            </div>
-
-            {/* Nodes in Phase */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {phaseGroup.nodes.map((node) => {
-                const badge = getStatusBadge(node.status);
-                const isSelected = selectedNodeId === node.id;
-
-                return (
-                  <div
-                    key={node.id}
-                    onClick={() => setSelectedNodeId(node.id)}
+                {/* Phase Header */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    backgroundColor: 'var(--vscode-editorGroupHeader-tabsBackground, #252526)',
+                    border: '1px solid var(--vscode-panel-border, #333)',
+                    borderRadius: '4px',
+                    position: 'sticky',
+                    top: 0,
+                    zIndex: 2
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        borderRadius: '50%',
+                        backgroundColor: 'var(--vscode-badge-background, #3a3d41)',
+                        color: 'var(--vscode-badge-foreground, #fff)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '10px',
+                        fontWeight: 600
+                      }}
+                    >
+                      {phaseGroup.order}
+                    </span>
+                    <span style={{ fontWeight: 600, fontSize: '12px' }}>{phaseGroup.label}</span>
+                  </div>
+                  <span
                     style={{
-                      backgroundColor: isSelected
-                        ? 'var(--vscode-list-activeSelectionBackground, #094771)'
-                        : 'var(--vscode-sideBar-background, #252526)',
-                      border: `1px solid ${isSelected ? 'var(--vscode-focusBorder, #007ACC)' : badge.border}`,
-                      borderRadius: '5px',
-                      padding: '12px',
-                      cursor: 'pointer',
-                      transition: 'border-color 0.15s, background-color 0.15s',
-                      boxShadow: isSelected ? '0 0 8px rgba(0, 122, 204, 0.4)' : 'none'
+                      fontSize: '11px',
+                      color: 'var(--vscode-descriptionForeground)'
                     }}
                   >
-                    <div
-                      style={{
+                    {phaseNodes.length}
+                  </span>
+                </div>
+
+                {/* Nodes in Phase */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  {phaseNodes.map((node) => {
+                    const badge = getStatusBadge(node.status);
+                    const isSelected = selectedNodeId === node.id;
+                    const isDragging = draggedNodeId === node.id;
+
+                    return (
+                      <div
+                        key={node.id}
+                        draggable={true}
+                        onDragStart={(e) => handleDragStart(e as any, node.id, phaseGroup.id)}
+                        onDragOver={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                        }}
+                        onDrop={(e) => {
+                          e.stopPropagation();
+                          handleDrop(e as any, phaseGroup.id, node.id);
+                        }}
+                        onClick={() => setSelectedNodeId(node.id)}
+                        style={{
+                          backgroundColor: isSelected
+                            ? 'var(--vscode-list-activeSelectionBackground, #094771)'
+                            : 'var(--vscode-sideBar-background, #252526)',
+                          border: `1px solid ${isSelected ? 'var(--vscode-focusBorder, #007ACC)' : badge.border}`,
+                          borderRadius: '5px',
+                          padding: '12px',
+                          cursor: 'grab',
+                          opacity: isDragging ? 0.4 : 1,
+                          transition: 'border-color 0.15s, background-color 0.15s, opacity 0.15s',
+                          boxShadow: isSelected ? '0 0 8px rgba(0, 122, 204, 0.4)' : 'none'
+                        }}
+                      >
+                        <div
+                          style={{
+
                         display: 'flex',
                         justifyContent: 'space-between',
                         alignItems: 'flex-start',
@@ -204,8 +346,12 @@ export function PipelineDag({ dag, onExecuteSkill, executingSkill }: PipelineDag
               })}
             </div>
           </div>
-        ))}
-      </div>
+        );
+      })}
+    </div>
+
+
+
 
       {/* Slide-out Detail Drawer */}
       {selectedNode && (
@@ -352,6 +498,8 @@ export function PipelineDag({ dag, onExecuteSkill, executingSkill }: PipelineDag
           </div>
         </aside>
       )}
+      </div>
     </div>
   );
 }
+
