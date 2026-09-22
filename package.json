@@ -291,7 +291,7 @@
     "watch:webview": "vite build --watch",
     "build": "npm run compile",
     "package": "vsce package --no-dependencies",
-    "package:dry-run": "vsce ls",
+    "package:dry-run": "vsce ls --no-dependencies",
     "package:check": "node scripts/check-package.mjs",
     "compile:tests": "tsc -p tsconfig.test.json",
     "pretest:extension-host": "npm run compile && npm run compile:tests",

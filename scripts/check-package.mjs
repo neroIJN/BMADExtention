@@ -24,7 +24,7 @@ if (!pkg.engines?.vscode) {
 console.log('[Check Package] Auditing vsce ls file inclusions...');
 let fileListOutput;
 try {
-  fileListOutput = execSync('npx @vscode/vsce ls', { encoding: 'utf8' });
+  fileListOutput = execSync('npx @vscode/vsce ls --no-dependencies', { encoding: 'utf8' });
 } catch (err) {
   console.error('[Error] Failed to run vsce ls:', err.message);
   process.exit(1);

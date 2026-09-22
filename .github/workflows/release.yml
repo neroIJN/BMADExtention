@@ -50,9 +50,16 @@ jobs:
           files: ${{ steps.get_vsix.outputs.vsix_file }}
           generate_release_notes: true
 
-      - name: Publish to VS Code Marketplace (Optional)
-        if: env.VSCE_PAT != ''
+      - name: Publish to VS Code Marketplace
+        if: ${{ secrets.VSCE_PAT != '' }}
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
           npx @vscode/vsce publish --packagePath ${{ steps.get_vsix.outputs.vsix_file }} -p $VSCE_PAT
+
+      - name: Publish to Open VSX Registry (Optional)
+        if: ${{ secrets.OVSX_PAT != '' }}
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        run: |
+          npx ovsx publish ${{ steps.get_vsix.outputs.vsix_file }} -p $OVSX_PAT
