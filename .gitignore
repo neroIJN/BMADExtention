@@ -5,6 +5,7 @@ node_modules/
 
 # Build Outputs
 dist/
+dist-test/
 out/
 *.vsix
 
@@ -18,15 +19,14 @@ yarn-error.log*
 # OS & Editor
 .DS_Store
 Thumbs.db
-.vscode-test/
-.vscode/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# BMAD Workspace Artifacts (Only on bmad-setup branch)
+/_bmad/
+/_bmad-output/
 
 # Environment
 .env
 .env.local
-
-# BMAD Environment (tracked in bmad-setup branch)
-_bmad/
-_bmad-output/
-.agents/
-.claude/

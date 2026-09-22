@@ -83,3 +83,17 @@ export async function detectBmadWorkspace(rootPath: string): Promise<BmadDetecti
     modules
   };
 }
+
+/**
+ * Scans an array of workspace root paths and returns detection results
+ * for all folders containing a valid BMAD installation.
+ */
+export async function detectAllBmadWorkspaces(rootPaths: string[]): Promise<BmadDetectionResult[]> {
+  if (!Array.isArray(rootPaths) || rootPaths.length === 0) {
+    return [];
+  }
+
+  const results = await Promise.all(rootPaths.map(detectBmadWorkspace));
+  return results.filter((r) => r.isBmad);
+}
+

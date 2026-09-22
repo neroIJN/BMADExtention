@@ -18,16 +18,21 @@ export class StatusBarManager {
   }
 
   /**
-   * Update the status bar item based on parsed lifecycle phases.
+   * Update the status bar item based on parsed lifecycle phases and optional active project name.
    */
-  public update(phases: BmadLifecyclePhase[]): void {
+  public update(phases: BmadLifecyclePhase[], projectName?: string): void {
     const status = evaluateProjectStatus(phases);
     this.currentStatus = status;
 
-    this.statusBarItem.text = status.statusBarText;
-    this.statusBarItem.tooltip = status.statusBarTooltip;
+    this.statusBarItem.text = projectName
+      ? `${status.statusBarText} (${projectName})`
+      : status.statusBarText;
+    this.statusBarItem.tooltip = projectName
+      ? `${status.statusBarTooltip} (Workspace: ${projectName})`
+      : status.statusBarTooltip;
     this.statusBarItem.show();
   }
+
 
   /**
    * Hide the status bar item (e.g. when no BMAD project is open).

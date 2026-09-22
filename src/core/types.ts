@@ -130,6 +130,9 @@ export interface BmadSkillNode {
   outputLocation?: string;
   outputs?: string;
   status: ArtifactStatus;
+  artifactStatus?: string;
+  name?: string;
+  command?: string;
   artifactPath?: string;
 }
 

@@ -1,0 +1,4 @@
+planning_artifacts: "_bmad-output/planning-artifacts"
+implementation_artifacts: "_bmad-output/implementation-artifacts"
+test_artifacts: "_bmad-output/test-artifacts"
+output_folder: "_bmad-output"

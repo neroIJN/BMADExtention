@@ -100,7 +100,8 @@ export function buildPipelineDag(
   // Pre-calculate completed skill IDs for dependency checking
   const completedSkillIds = new Set<string>();
   for (const s of skills) {
-    if (s.artifactStatus === 'completed') {
+    const sStatus = s.artifactStatus || s.status;
+    if (sStatus === 'completed') {
       completedSkillIds.add(s.id);
     }
   }
@@ -130,9 +131,10 @@ export function buildPipelineDag(
     let status: BmadDagNodeStatus = 'pending';
     let blockerReason: string | undefined;
 
-    if (skill.artifactStatus === 'completed') {
+    const skillStatus = skill.artifactStatus || skill.status;
+    if (skillStatus === 'completed') {
       status = 'completed';
-    } else if (skill.artifactStatus === 'in-progress') {
+    } else if (skillStatus === 'in-progress') {
       status = 'in-progress';
     } else {
       // Check if any prerequisite is incomplete
@@ -152,7 +154,7 @@ export function buildPipelineDag(
 
     const dagNode: BmadDagNode = {
       id: skill.id,
-      name: skill.name,
+      name: skill.name || skill.displayName || skill.skill,
       phaseId: canonicalPhase.id,
       phaseLabel: canonicalPhase.label,
       phaseOrder: canonicalPhase.order,
@@ -162,7 +164,7 @@ export function buildPipelineDag(
       followedBy: [],
       inputs: metadata.inputs,
       outputs: metadata.outputs,
-      command: skill.command,
+      command: skill.command || skill.action || skill.menuCode || skill.skill,
       blockerReason
     };
 
@@ -255,3 +257,71 @@ export function buildPipelineDag(
     edges
   };
 }
+
+/**
+ * Validates whether a set of directed dependency edges contains any cyclic loops.
+ */
+export function hasDependencyCycle(edges: { from: string; to: string }[]): boolean {
+  const adj = new Map<string, string[]>();
+  for (const edge of edges) {
+    if (!adj.has(edge.from)) {
+      adj.set(edge.from, []);
+    }
+    adj.get(edge.from)!.push(edge.to);
+  }
+
+  const visited = new Set<string>();
+  const inStack = new Set<string>();
+
+  function dfs(node: string): boolean {
+    visited.add(node);
+    inStack.add(node);
+
+    const neighbors = adj.get(node) || [];
+    for (const neighbor of neighbors) {
+      if (!visited.has(neighbor)) {
+        if (dfs(neighbor)) return true;
+      } else if (inStack.has(neighbor)) {
+        return true;
+      }
+    }
+
+    inStack.delete(node);
+    return false;
+  }
+
+  for (const node of adj.keys()) {
+    if (!visited.has(node)) {
+      if (dfs(node)) return true;
+    }
+  }
+
+  return false;
+}
+
+/**
+ * Validates adding a new directed dependency edge between skills.
+ */
+export function validateDependencyEdge(
+  existingEdges: { from: string; to: string }[],
+  newEdge: { from: string; to: string }
+): { valid: boolean; reason?: string } {
+  if (!newEdge.from || !newEdge.to) {
+    return { valid: false, reason: 'Source and target skills must be defined.' };
+  }
+  if (newEdge.from === newEdge.to) {
+    return { valid: false, reason: 'Self-referencing dependency loops are not permitted.' };
+  }
+  const duplicate = existingEdges.some(
+    (e) => e.from === newEdge.from && e.to === newEdge.to
+  );
+  if (duplicate) {
+    return { valid: false, reason: 'Dependency edge already exists.' };
+  }
+  const updated = [...existingEdges, newEdge];
+  if (hasDependencyCycle(updated)) {
+    return { valid: false, reason: 'Adding this dependency introduces a cyclic deadlock.' };
+  }
+  return { valid: true };
+}
+
