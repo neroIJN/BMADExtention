@@ -141,8 +141,8 @@ npm run package:check
 npm run package
 
 # Validate and inspect the exact VSIX archive that will be published
-npm run package:check:vsix -- ./bmad-visualizer-0.1.0.vsix
-unzip -l ./bmad-visualizer-0.1.0.vsix
+npm run package:check:vsix -- ./bmad-method-visualizer-0.1.2.vsix
+unzip -l ./bmad-method-visualizer-0.1.2.vsix
 ```
 
 ---
