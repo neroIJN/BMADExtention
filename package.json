@@ -2,7 +2,7 @@
   "name": "bmad-visualizer",
   "displayName": "BMAD Visualizer",
   "description": "Visualizer, cockpit, and interactive assistant for the BMad Method",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "neroIJN",
   "repository": {
     "type": "git",
