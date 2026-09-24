@@ -1,5 +1,5 @@
 {
-  "name": "bmad-visualizer",
+  "name": "bmad-method-visualizer",
   "displayName": "BMAD Visualizer",
   "description": "Visualizer, cockpit, and interactive assistant for the BMad Method",
   "version": "0.1.2",
