@@ -41,14 +41,27 @@ jobs:
         run: npm run package:check
 
       - name: Build and Package Extension (.vsix)
-        run: npm run package
+        run: |
+          rm -f ./*.vsix
+          npm run package
 
       - name: Find Packaged VSIX
         id: get_vsix
         run: |
-          VSIX_PATH=$(ls *.vsix | head -n 1)
+          mapfile -t VSIX_FILES < <(ls -1 ./*.vsix 2>/dev/null || true)
+          if [ "${#VSIX_FILES[@]}" -ne 1 ]; then
+            echo "Expected exactly one VSIX artifact, found ${#VSIX_FILES[@]}"
+            ls -1 ./*.vsix 2>/dev/null || true
+            exit 1
+          fi
+          VSIX_PATH="${VSIX_FILES[0]#./}"
           echo "vsix_file=$VSIX_PATH" >> $GITHUB_OUTPUT
           echo "Found package: $VSIX_PATH"
+
+      - name: Inspect Packaged VSIX
+        run: |
+          npm run package:check:vsix -- "${{ steps.get_vsix.outputs.vsix_file }}"
+          unzip -l "${{ steps.get_vsix.outputs.vsix_file }}"
 
       - name: Create GitHub Release with VSIX
         uses: softprops/action-gh-release@v2

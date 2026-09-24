@@ -130,6 +130,21 @@ npm run build
 Press F5 in VS Code
 ```
 
+### Marketplace Packaging Verification
+Run these commands before publishing to validate the same package gates used by CI:
+
+```bash
+# Build + validate metadata, dist output, and package allowlist
+npm run package:check
+
+# Create a VSIX with the production package layout
+npm run package
+
+# Validate and inspect the exact VSIX archive that will be published
+npm run package:check:vsix -- ./bmad-visualizer-0.1.0.vsix
+unzip -l ./bmad-visualizer-0.1.0.vsix
+```
+
 ---
 
 ## 📄 License
