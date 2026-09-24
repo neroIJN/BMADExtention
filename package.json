@@ -17,6 +17,13 @@
     "vscode": "^1.85.0"
   },
   "license": "MIT",
+  "files": [
+    "dist/**",
+    "media/**",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
   "categories": [
     "Visualization",
     "Other"
@@ -285,16 +292,17 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run build",
+    "vscode:prepublish": "npm run build && npm run package:check",
     "compile:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node",
     "compile:webview": "vite build",
     "compile": "npm run compile:ext && npm run compile:webview",
     "watch:ext": "esbuild src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --watch",
     "watch:webview": "vite build --watch",
     "build": "npm run compile",
-    "package": "vsce package --no-dependencies",
-    "package:dry-run": "vsce ls --no-dependencies",
+    "package": "npm run package:check && npx @vscode/vsce package --no-dependencies",
+    "package:dry-run": "npx @vscode/vsce ls --no-dependencies",
     "package:check": "node scripts/check-package.mjs",
+    "package:check:vsix": "node scripts/check-package.mjs --vsix",
     "compile:tests": "tsc -p tsconfig.test.json",
     "pretest:extension-host": "npm run compile && npm run compile:tests",
     "test:extension-host": "node ./dist-test/runTest.js",
